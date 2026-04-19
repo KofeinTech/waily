@@ -1,0 +1,39 @@
+# Flutter
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+.vscode/
+*.lock
+!pubspec.lock
+
+# FVM
+.fvm/flutter_sdk
+
+# Generated
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Secrets & credentials
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.jks
+**/credentials*
+**/secrets*
+**/service-account*.json
+*.keystore
+local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
