@@ -1,0 +1,31 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:waily/core/ui_kit/extensions/app_input_style.dart';
+import 'package:waily/core/ui_kit/theme/app_colors.dart';
+import 'package:waily/core/ui_kit/theme/app_border_radius.dart';
+
+void main() {
+  group('AppInputStyle', () {
+    test('dark() fillColor is AppColors.surface', () {
+      expect(AppInputStyle.dark().fillColor, AppColors.surface);
+    });
+
+    test('dark() focusedBorderColor is AppColors.primary', () {
+      expect(AppInputStyle.dark().focusedBorderColor, AppColors.primary);
+    });
+
+    test('dark() errorBorderColor is AppColors.error', () {
+      expect(AppInputStyle.dark().errorBorderColor, AppColors.error);
+    });
+
+    test('dark() borderRadius is AppBorderRadius.m', () {
+      expect(AppInputStyle.dark().borderRadius, AppBorderRadius.m);
+    });
+
+    test('copyWith overrides fillColor', () {
+      final style = AppInputStyle.dark();
+      final modified = style.copyWith(fillColor: AppColors.surfaceVariant);
+      expect(modified.fillColor, AppColors.surfaceVariant);
+      expect(modified.borderRadius, style.borderRadius);
+    });
+  });
+}
