@@ -1,4 +1,6 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
+import 'core/ui_kit/theme/app_theme.dart';
 
 void main() {
   runApp(const MainApp());
@@ -9,8 +11,9 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
+    return MaterialApp(
+      theme: darkTheme,
+      home: const Scaffold(
         body: Center(
           child: Text('Hello World!'),
         ),
