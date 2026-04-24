@@ -54,6 +54,7 @@ class WailyTextField extends StatelessWidget {
         fillColor: s.fillColor,
         labelStyle: s.labelStyle,
         hintStyle: s.hintStyle,
+        errorStyle: s.errorStyle,
         contentPadding: s.contentPadding,
         border: OutlineInputBorder(
           borderRadius: radius,

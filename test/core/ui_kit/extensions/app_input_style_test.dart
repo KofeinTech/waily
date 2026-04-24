@@ -27,5 +27,10 @@ void main() {
       expect(modified.fillColor, AppColors.surfaceVariant);
       expect(modified.borderRadius, style.borderRadius);
     });
+
+    test('dark() errorStyle uses AppColors.error color', () {
+      final style = AppInputStyle.dark();
+      expect(style.errorStyle.color, AppColors.error);
+    });
   });
 }

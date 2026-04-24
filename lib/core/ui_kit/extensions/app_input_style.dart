@@ -19,6 +19,7 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
     required this.labelStyle,
     required this.inputStyle,
     required this.hintStyle,
+    required this.errorStyle,
   });
 
   final Color fillColor;
@@ -30,20 +31,22 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
   final TextStyle labelStyle;
   final TextStyle inputStyle;
   final TextStyle hintStyle;
+  final TextStyle errorStyle;
 
   factory AppInputStyle.dark() => AppInputStyle._(
-    fillColor:           AppColors.surface,
-    borderColor:         AppColors.border,
-    focusedBorderColor:  AppColors.primary,
-    errorBorderColor:    AppColors.error,
-    borderRadius:        AppBorderRadius.m,
+    fillColor: AppColors.surface,
+    borderColor: AppColors.border,
+    focusedBorderColor: AppColors.primary,
+    errorBorderColor: AppColors.error,
+    borderRadius: AppBorderRadius.m,
     contentPadding: const EdgeInsets.symmetric(
       horizontal: AppSpacing.m,
       vertical: AppSpacing.m,
     ),
     labelStyle: AppTypography.s14w400(color: AppColors.textSecondary),
     inputStyle: AppTypography.s16w400(color: AppColors.textPrimary),
-    hintStyle:  AppTypography.s16w400(color: AppColors.textDisabled),
+    hintStyle: AppTypography.s16w400(color: AppColors.textDisabled),
+    errorStyle: AppTypography.s12w500(color: AppColors.error),
   );
 
   @override
@@ -57,31 +60,40 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
     TextStyle? labelStyle,
     TextStyle? inputStyle,
     TextStyle? hintStyle,
+    TextStyle? errorStyle,
   }) => AppInputStyle._(
-    fillColor:           fillColor           ?? this.fillColor,
-    borderColor:         borderColor         ?? this.borderColor,
-    focusedBorderColor:  focusedBorderColor  ?? this.focusedBorderColor,
-    errorBorderColor:    errorBorderColor    ?? this.errorBorderColor,
-    borderRadius:        borderRadius        ?? this.borderRadius,
-    contentPadding:      contentPadding      ?? this.contentPadding,
-    labelStyle:          labelStyle          ?? this.labelStyle,
-    inputStyle:          inputStyle          ?? this.inputStyle,
-    hintStyle:           hintStyle           ?? this.hintStyle,
+    fillColor: fillColor ?? this.fillColor,
+    borderColor: borderColor ?? this.borderColor,
+    focusedBorderColor: focusedBorderColor ?? this.focusedBorderColor,
+    errorBorderColor: errorBorderColor ?? this.errorBorderColor,
+    borderRadius: borderRadius ?? this.borderRadius,
+    contentPadding: contentPadding ?? this.contentPadding,
+    labelStyle: labelStyle ?? this.labelStyle,
+    inputStyle: inputStyle ?? this.inputStyle,
+    hintStyle: hintStyle ?? this.hintStyle,
+    errorStyle: errorStyle ?? this.errorStyle,
   );
 
   @override
   AppInputStyle lerp(ThemeExtension<AppInputStyle>? other, double t) {
     if (other is! AppInputStyle) return this;
     return AppInputStyle._(
-      fillColor:          Color.lerp(fillColor,          other.fillColor,          t) ?? fillColor,
-      borderColor:        Color.lerp(borderColor,        other.borderColor,        t) ?? borderColor,
-      focusedBorderColor: Color.lerp(focusedBorderColor, other.focusedBorderColor, t) ?? focusedBorderColor,
-      errorBorderColor:   Color.lerp(errorBorderColor,   other.errorBorderColor,   t) ?? errorBorderColor,
-      borderRadius:       t < 0.5 ? borderRadius : other.borderRadius,
-      contentPadding:     EdgeInsets.lerp(contentPadding, other.contentPadding, t) ?? contentPadding,
-      labelStyle:         TextStyle.lerp(labelStyle, other.labelStyle, t) ?? labelStyle,
-      inputStyle:         TextStyle.lerp(inputStyle, other.inputStyle, t) ?? inputStyle,
-      hintStyle:          TextStyle.lerp(hintStyle,  other.hintStyle,  t) ?? hintStyle,
+      fillColor: Color.lerp(fillColor, other.fillColor, t) ?? fillColor,
+      borderColor: Color.lerp(borderColor, other.borderColor, t) ?? borderColor,
+      focusedBorderColor:
+          Color.lerp(focusedBorderColor, other.focusedBorderColor, t) ??
+          focusedBorderColor,
+      errorBorderColor:
+          Color.lerp(errorBorderColor, other.errorBorderColor, t) ??
+          errorBorderColor,
+      borderRadius: t < 0.5 ? borderRadius : other.borderRadius,
+      contentPadding:
+          EdgeInsets.lerp(contentPadding, other.contentPadding, t) ??
+          contentPadding,
+      labelStyle: TextStyle.lerp(labelStyle, other.labelStyle, t) ?? labelStyle,
+      inputStyle: TextStyle.lerp(inputStyle, other.inputStyle, t) ?? inputStyle,
+      hintStyle: TextStyle.lerp(hintStyle, other.hintStyle, t) ?? hintStyle,
+      errorStyle: TextStyle.lerp(errorStyle, other.errorStyle, t) ?? errorStyle,
     );
   }
 }
