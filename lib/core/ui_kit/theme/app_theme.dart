@@ -1,0 +1,23 @@
+import 'package:flutter/material.dart';
+import '../extensions/app_color_style.dart';
+import '../extensions/app_text_styles.dart';
+import '../extensions/app_button_style.dart';
+import '../extensions/app_input_style.dart';
+import '../extensions/app_card_style.dart';
+import 'app_fonts.dart';
+
+/// The single [ThemeData] used throughout the app.
+///
+/// Dark theme only — no light theme.
+final ThemeData darkTheme = ThemeData(
+  brightness: Brightness.dark,
+  fontFamily: AppFonts.helveticaNeue,
+  useMaterial3: true,
+  extensions: [
+    AppColorStyle.dark(),
+    AppTextStyles.dark(),
+    AppButtonStyle.dark(),
+    AppInputStyle.dark(),
+    AppCardStyle.dark(),
+  ],
+);
