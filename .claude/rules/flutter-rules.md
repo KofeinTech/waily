@@ -1,5 +1,4 @@
 # Flutter / Dart Rules
-
 ## Stack
 
 Flutter (FVM), Riverpod, GoRouter, Freezed, Dio + Retrofit, flutter_gen, flutter_svg
