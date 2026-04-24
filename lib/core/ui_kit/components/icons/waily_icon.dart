@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:waily/core/gen/assets.gen.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../extensions/theme_context_extension.dart';
 
 /// App icon widget backed by a typed [SvgGenImage] from flutter_gen.
@@ -13,12 +12,7 @@ import '../../extensions/theme_context_extension.dart';
 /// WailyIcon(icon: Assets.icons.close, size: 20, color: context.appColors.error)
 /// ```
 class WailyIcon extends StatelessWidget {
-  const WailyIcon({
-    super.key,
-    required this.icon,
-    this.size,
-    this.color,
-  });
+  const WailyIcon({super.key, required this.icon, this.size, this.color});
 
   final SvgGenImage icon;
 
