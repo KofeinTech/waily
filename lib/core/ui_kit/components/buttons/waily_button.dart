@@ -34,32 +34,30 @@ class WailyButton extends StatelessWidget {
     required EdgeInsets padding,
     required TextStyle textStyle,
     BorderSide? side,
-  }) =>
-      ButtonStyle(
-        backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.disabled)
-              ? disabledBackground
-              : background,
-        ),
-        foregroundColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.disabled)
-              ? disabledForeground
-              : foreground,
-        ),
-        overlayColor: WidgetStateProperty.all(Colors.transparent),
-        elevation: WidgetStateProperty.all(0),
-        shadowColor: WidgetStateProperty.all(Colors.transparent),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-            side: side ?? BorderSide.none,
-          ),
-        ),
-        padding: WidgetStateProperty.all(padding),
-        textStyle:
-            WidgetStateProperty.all(textStyle.copyWith(inherit: false)),
-        splashFactory: NoSplash.splashFactory,
-      );
+  }) => ButtonStyle(
+    backgroundColor: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.disabled)
+          ? disabledBackground
+          : background,
+    ),
+    foregroundColor: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.disabled)
+          ? disabledForeground
+          : foreground,
+    ),
+    overlayColor: WidgetStateProperty.all(Colors.transparent),
+    elevation: WidgetStateProperty.all(0),
+    shadowColor: WidgetStateProperty.all(Colors.transparent),
+    shape: WidgetStateProperty.all(
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadius),
+        side: side ?? BorderSide.none,
+      ),
+    ),
+    padding: WidgetStateProperty.all(padding),
+    textStyle: WidgetStateProperty.all(textStyle.copyWith(inherit: false)),
+    splashFactory: NoSplash.splashFactory,
+  );
 
   @override
   Widget build(BuildContext context) {

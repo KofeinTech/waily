@@ -25,10 +25,10 @@ class AppCardStyle extends ThemeExtension<AppCardStyle> {
 
   factory AppCardStyle.dark() => AppCardStyle._(
     backgroundColor: AppColors.surface,
-    shadowColor:     AppColors.black.withValues(alpha: 0.2),
-    borderRadius:    AppBorderRadius.l,
-    padding:         const EdgeInsets.all(AppSpacing.m),
-    elevation:       0.0,
+    shadowColor: AppColors.black.withValues(alpha: 0.2),
+    borderRadius: AppBorderRadius.l,
+    padding: const EdgeInsets.all(AppSpacing.m),
+    elevation: 0.0,
   );
 
   @override
@@ -40,21 +40,23 @@ class AppCardStyle extends ThemeExtension<AppCardStyle> {
     double? elevation,
   }) => AppCardStyle._(
     backgroundColor: backgroundColor ?? this.backgroundColor,
-    shadowColor:     shadowColor     ?? this.shadowColor,
-    borderRadius:    borderRadius    ?? this.borderRadius,
-    padding:         padding         ?? this.padding,
-    elevation:       elevation       ?? this.elevation,
+    shadowColor: shadowColor ?? this.shadowColor,
+    borderRadius: borderRadius ?? this.borderRadius,
+    padding: padding ?? this.padding,
+    elevation: elevation ?? this.elevation,
   );
 
   @override
   AppCardStyle lerp(ThemeExtension<AppCardStyle>? other, double t) {
     if (other is! AppCardStyle) return this;
     return AppCardStyle._(
-      backgroundColor: Color.lerp(backgroundColor, other.backgroundColor, t) ?? backgroundColor,
-      shadowColor:     Color.lerp(shadowColor,     other.shadowColor,     t) ?? shadowColor,
-      borderRadius:    t < 0.5 ? borderRadius : other.borderRadius,
-      padding:         EdgeInsets.lerp(padding, other.padding, t) ?? padding,
-      elevation:       lerpDouble(elevation, other.elevation, t) ?? elevation,
+      backgroundColor:
+          Color.lerp(backgroundColor, other.backgroundColor, t) ??
+          backgroundColor,
+      shadowColor: Color.lerp(shadowColor, other.shadowColor, t) ?? shadowColor,
+      borderRadius: t < 0.5 ? borderRadius : other.borderRadius,
+      padding: EdgeInsets.lerp(padding, other.padding, t) ?? padding,
+      elevation: lerpDouble(elevation, other.elevation, t) ?? elevation,
     );
   }
 }

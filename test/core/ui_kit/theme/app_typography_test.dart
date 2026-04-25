@@ -52,10 +52,7 @@ void main() {
 
     test('every style sets TextLeadingDistribution.even', () {
       final style = AppTypography.s16w400();
-      expect(
-        style.leadingDistribution,
-        TextLeadingDistribution.even,
-      );
+      expect(style.leadingDistribution, TextLeadingDistribution.even);
     });
   });
 }

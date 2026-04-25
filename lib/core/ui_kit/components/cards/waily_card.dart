@@ -13,11 +13,7 @@ import '../../extensions/theme_context_extension.dart';
 /// )
 /// ```
 class WailyCard extends StatelessWidget {
-  const WailyCard({
-    super.key,
-    required this.child,
-    this.padding,
-  });
+  const WailyCard({super.key, required this.child, this.padding});
 
   final Widget child;
 
@@ -36,10 +32,7 @@ class WailyCard extends StatelessWidget {
       borderRadius: radius,
       child: ClipRRect(
         borderRadius: radius,
-        child: Padding(
-          padding: padding ?? s.padding,
-          child: child,
-        ),
+        child: Padding(padding: padding ?? s.padding, child: child),
       ),
     );
   }

@@ -19,7 +19,9 @@ void main() {
 
     test('copyWith overrides backgroundColor', () {
       final style = AppCardStyle.dark();
-      final modified = style.copyWith(backgroundColor: AppColors.surfaceVariant);
+      final modified = style.copyWith(
+        backgroundColor: AppColors.surfaceVariant,
+      );
       expect(modified.backgroundColor, AppColors.surfaceVariant);
       expect(modified.borderRadius, style.borderRadius);
     });

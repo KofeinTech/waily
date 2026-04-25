@@ -37,18 +37,18 @@ class AppButtonStyle extends ThemeExtension<AppButtonStyle> {
   final TextStyle textStyle;
 
   factory AppButtonStyle.dark() => AppButtonStyle._(
-    primaryBackground:   AppColors.primary,
-    primaryForeground:   AppColors.textPrimary,
+    primaryBackground: AppColors.primarySubtle,
+    primaryForeground: AppColors.surfaceVariant,
     secondaryBackground: AppColors.surface,
     secondaryForeground: AppColors.textPrimary,
-    outlinedBorderColor: AppColors.primary,
-    outlinedForeground:  AppColors.primary,
-    disabledBackground:  AppColors.surfaceVariant,
-    disabledForeground:  AppColors.textDisabled,
-    borderRadius: AppBorderRadius.l,
+    outlinedBorderColor: AppColors.primarySubtle,
+    outlinedForeground: AppColors.primarySubtle,
+    disabledBackground: AppColors.textSecondary,
+    disabledForeground: AppColors.surfaceVariant,
+    borderRadius: AppBorderRadius.m,
     padding: const EdgeInsets.symmetric(
       vertical: AppSpacing.m,
-      horizontal: AppSpacing.l,
+      horizontal: AppSpacing.ml,
     ),
     textStyle: AppTypography.s16w500(),
   );
@@ -67,34 +67,50 @@ class AppButtonStyle extends ThemeExtension<AppButtonStyle> {
     EdgeInsets? padding,
     TextStyle? textStyle,
   }) => AppButtonStyle._(
-    primaryBackground:   primaryBackground   ?? this.primaryBackground,
-    primaryForeground:   primaryForeground   ?? this.primaryForeground,
+    primaryBackground: primaryBackground ?? this.primaryBackground,
+    primaryForeground: primaryForeground ?? this.primaryForeground,
     secondaryBackground: secondaryBackground ?? this.secondaryBackground,
     secondaryForeground: secondaryForeground ?? this.secondaryForeground,
     outlinedBorderColor: outlinedBorderColor ?? this.outlinedBorderColor,
-    outlinedForeground:  outlinedForeground  ?? this.outlinedForeground,
-    disabledBackground:  disabledBackground  ?? this.disabledBackground,
-    disabledForeground:  disabledForeground  ?? this.disabledForeground,
+    outlinedForeground: outlinedForeground ?? this.outlinedForeground,
+    disabledBackground: disabledBackground ?? this.disabledBackground,
+    disabledForeground: disabledForeground ?? this.disabledForeground,
     borderRadius: borderRadius ?? this.borderRadius,
-    padding:      padding      ?? this.padding,
-    textStyle:    textStyle    ?? this.textStyle,
+    padding: padding ?? this.padding,
+    textStyle: textStyle ?? this.textStyle,
   );
 
   @override
   AppButtonStyle lerp(ThemeExtension<AppButtonStyle>? other, double t) {
     if (other is! AppButtonStyle) return this;
     return AppButtonStyle._(
-      primaryBackground:   Color.lerp(primaryBackground,   other.primaryBackground,   t) ?? primaryBackground,
-      primaryForeground:   Color.lerp(primaryForeground,   other.primaryForeground,   t) ?? primaryForeground,
-      secondaryBackground: Color.lerp(secondaryBackground, other.secondaryBackground, t) ?? secondaryBackground,
-      secondaryForeground: Color.lerp(secondaryForeground, other.secondaryForeground, t) ?? secondaryForeground,
-      outlinedBorderColor: Color.lerp(outlinedBorderColor, other.outlinedBorderColor, t) ?? outlinedBorderColor,
-      outlinedForeground:  Color.lerp(outlinedForeground,  other.outlinedForeground,  t) ?? outlinedForeground,
-      disabledBackground:  Color.lerp(disabledBackground,  other.disabledBackground,  t) ?? disabledBackground,
-      disabledForeground:  Color.lerp(disabledForeground,  other.disabledForeground,  t) ?? disabledForeground,
+      primaryBackground:
+          Color.lerp(primaryBackground, other.primaryBackground, t) ??
+          primaryBackground,
+      primaryForeground:
+          Color.lerp(primaryForeground, other.primaryForeground, t) ??
+          primaryForeground,
+      secondaryBackground:
+          Color.lerp(secondaryBackground, other.secondaryBackground, t) ??
+          secondaryBackground,
+      secondaryForeground:
+          Color.lerp(secondaryForeground, other.secondaryForeground, t) ??
+          secondaryForeground,
+      outlinedBorderColor:
+          Color.lerp(outlinedBorderColor, other.outlinedBorderColor, t) ??
+          outlinedBorderColor,
+      outlinedForeground:
+          Color.lerp(outlinedForeground, other.outlinedForeground, t) ??
+          outlinedForeground,
+      disabledBackground:
+          Color.lerp(disabledBackground, other.disabledBackground, t) ??
+          disabledBackground,
+      disabledForeground:
+          Color.lerp(disabledForeground, other.disabledForeground, t) ??
+          disabledForeground,
       borderRadius: t < 0.5 ? borderRadius : other.borderRadius,
-      padding:      EdgeInsets.lerp(padding, other.padding, t) ?? padding,
-      textStyle:    TextStyle.lerp(textStyle, other.textStyle, t) ?? textStyle,
+      padding: EdgeInsets.lerp(padding, other.padding, t) ?? padding,
+      textStyle: TextStyle.lerp(textStyle, other.textStyle, t) ?? textStyle,
     );
   }
 }
