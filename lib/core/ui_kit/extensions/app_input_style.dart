@@ -74,7 +74,9 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
     ),
     labelStyle: AppTypography.s16w400(color: AppColors.textSecondary),
     inputStyle: AppTypography.s16w400(color: AppColors.surfaceVariant),
-    hintStyle: AppTypography.s16w400(color: AppColors.primary),
+    // Figma Input field / Label TEXT fill is #9EA3AE (textSecondary).
+    // Hints/placeholders share the same muted role.
+    hintStyle: AppTypography.s16w400(color: AppColors.textSecondary),
     errorStyle: AppTypography.s14w400(color: AppColors.error),
   );
 

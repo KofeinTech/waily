@@ -83,6 +83,19 @@ class WailyButton extends StatelessWidget {
 
   bool get _interactive => !isDisabled && !isLoading && onPressed != null;
 
+  /// Loading-spinner geometry, decoupled from the label font-size.
+  /// Default size: 20px diameter, 2.0 stroke. Small: 16px / 2.0.
+  static ({double size, double strokeWidth}) _spinnerMetrics(
+    WailyButtonSize size,
+  ) {
+    switch (size) {
+      case WailyButtonSize.defaultSize:
+        return (size: 20, strokeWidth: 2);
+      case WailyButtonSize.small:
+        return (size: 16, strokeWidth: 2);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = context.appButtonStyle;
@@ -92,6 +105,7 @@ class WailyButton extends StatelessWidget {
     final padding = isSmall ? s.paddingSmall : s.paddingDefault;
     final height = isSmall ? s.heightSmall : s.heightDefault;
     final textStyle = isSmall ? s.textStyleSmall : s.textStyleDefault;
+    final spinner = _spinnerMetrics(size);
 
     final Color background = isDisabled
         ? s.disabledBackground
@@ -111,10 +125,10 @@ class WailyButton extends StatelessWidget {
 
     final Widget child = isLoading
         ? SizedBox(
-            width: textStyle.fontSize ?? 16,
-            height: textStyle.fontSize ?? 16,
+            width: spinner.size,
+            height: spinner.size,
             child: CircularProgressIndicator(
-              strokeWidth: 2,
+              strokeWidth: spinner.strokeWidth,
               valueColor: AlwaysStoppedAnimation<Color>(foreground),
             ),
           )
@@ -162,6 +176,7 @@ class _WailyButtonSurfaceState extends State<_WailyButtonSurface> {
   final Set<WidgetState> _states = <WidgetState>{};
 
   void _setPressed(bool pressed) {
+    if (!mounted) return;
     final has = _states.contains(WidgetState.pressed);
     if (has == pressed) return;
     setState(() {

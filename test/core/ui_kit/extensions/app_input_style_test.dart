@@ -45,5 +45,10 @@ void main() {
       final style = AppInputStyle.dark();
       expect(style.errorStyle.color, AppColors.error);
     });
+
+    test('dark() hintStyle uses AppColors.textSecondary (Figma #9EA3AE)', () {
+      final style = AppInputStyle.dark();
+      expect(style.hintStyle.color, AppColors.textSecondary);
+    });
   });
 }
