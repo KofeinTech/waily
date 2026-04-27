@@ -9,6 +9,7 @@ import 'sections/checkboxes_section.dart';
 import 'sections/chips_section.dart';
 import 'sections/links_section.dart';
 import 'sections/loaders_section.dart';
+import 'sections/options_section.dart';
 import 'sections/progress_bars_section.dart';
 import 'sections/big_dropdowns_section.dart';
 import 'sections/segmented_buttons_section.dart';
@@ -44,6 +45,7 @@ class ShowcaseHome extends StatelessWidget {
           SegmentedPickersSection(),
           SegmentedButtonsSection(),
           BigDropdownsSection(),
+          OptionsSection(),
         ],
       ),
     );
