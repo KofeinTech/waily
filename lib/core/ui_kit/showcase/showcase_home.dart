@@ -10,6 +10,7 @@ import 'sections/chips_section.dart';
 import 'sections/links_section.dart';
 import 'sections/loaders_section.dart';
 import 'sections/progress_bars_section.dart';
+import 'sections/segmented_pickers_section.dart';
 import 'sections/switchers_section.dart';
 import 'sections/text_fields_section.dart';
 
@@ -38,6 +39,7 @@ class ShowcaseHome extends StatelessWidget {
           ChipsSection(),
           ProgressBarsSection(),
           LoadersSection(),
+          SegmentedPickersSection(),
         ],
       ),
     );

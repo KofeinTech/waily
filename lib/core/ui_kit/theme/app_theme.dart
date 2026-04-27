@@ -11,6 +11,7 @@ import '../extensions/app_switcher_style.dart';
 import '../extensions/app_chip_style.dart';
 import '../extensions/app_progress_bar_style.dart';
 import '../extensions/app_loader_style.dart';
+import '../extensions/app_segmented_picker_style.dart';
 import 'app_fonts.dart';
 
 /// The single [ThemeData] used throughout the app.
@@ -33,5 +34,6 @@ final ThemeData darkTheme = ThemeData(
     AppChipStyle.dark(),
     AppProgressBarStyle.dark(),
     AppLoaderStyle.dark(),
+    AppSegmentedPickerStyle.dark(),
   ],
 );
