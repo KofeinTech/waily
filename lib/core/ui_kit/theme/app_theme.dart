@@ -25,6 +25,7 @@ import '../extensions/app_history_card_style.dart';
 import '../extensions/app_list_element_style.dart';
 import '../extensions/app_chat_tip_style.dart';
 import '../extensions/app_selector_style.dart';
+import '../extensions/app_picker_card_style.dart';
 import 'app_fonts.dart';
 
 /// The single [ThemeData] used throughout the app.
@@ -61,5 +62,6 @@ final ThemeData darkTheme = ThemeData(
     AppListElementStyle.dark(),
     AppChatTipStyle.dark(),
     AppSelectorStyle.dark(),
+    AppPickerCardStyle.dark(),
   ],
 );

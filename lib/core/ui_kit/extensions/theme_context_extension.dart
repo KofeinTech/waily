@@ -25,6 +25,7 @@ import 'app_history_card_style.dart';
 import 'app_list_element_style.dart';
 import 'app_chat_tip_style.dart';
 import 'app_selector_style.dart';
+import 'app_picker_card_style.dart';
 
 /// BuildContext shortcuts for all UI kit ThemeExtensions.
 ///
@@ -81,4 +82,6 @@ extension ThemeContextExtension on BuildContext {
       Theme.of(this).extension<AppChatTipStyle>()!;
   AppSelectorStyle get appSelectorStyle =>
       Theme.of(this).extension<AppSelectorStyle>()!;
+  AppPickerCardStyle get appPickerCardStyle =>
+      Theme.of(this).extension<AppPickerCardStyle>()!;
 }
