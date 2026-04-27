@@ -12,6 +12,8 @@
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:talker/talker.dart' as _i993;
+import 'package:waily/core/database/app_database.dart' as _i938;
+import 'package:waily/core/database/database_module.dart' as _i513;
 import 'package:waily/core/di/app_module.dart' as _i267;
 import 'package:waily/features/core/data/managers/notification_manager_impl.dart'
     as _i95;
@@ -37,7 +39,12 @@ extension GetItInjectableX on _i174.GetIt {
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final appModule = _$AppModule();
+    final databaseModule = _$DatabaseModule();
     gh.singleton<_i993.Talker>(() => appModule.talker);
+    gh.lazySingleton<_i938.AppDatabase>(
+      () => databaseModule.appDatabase(),
+      dispose: _i513.closeDatabase,
+    );
     gh.lazySingleton<_i501.SecureStorage>(() => _i1044.SecureStorageImpl());
     gh.singleton<_i349.NotificationManager>(
       () => _i95.NotificationManagerImpl(),
@@ -59,3 +66,5 @@ extension GetItInjectableX on _i174.GetIt {
 }
 
 class _$AppModule extends _i267.AppModule {}
+
+class _$DatabaseModule extends _i513.DatabaseModule {}
