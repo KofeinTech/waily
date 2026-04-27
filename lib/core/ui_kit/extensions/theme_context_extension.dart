@@ -18,6 +18,7 @@ import 'app_option_style.dart';
 import 'app_digit_box_style.dart';
 import 'app_text_input_style.dart';
 import 'app_chat_input_field_style.dart';
+import 'app_message_field_style.dart';
 
 /// BuildContext shortcuts for all UI kit ThemeExtensions.
 ///
@@ -60,4 +61,6 @@ extension ThemeContextExtension on BuildContext {
       Theme.of(this).extension<AppTextInputStyle>()!;
   AppChatInputFieldStyle get appChatInputFieldStyle =>
       Theme.of(this).extension<AppChatInputFieldStyle>()!;
+  AppMessageFieldStyle get appMessageFieldStyle =>
+      Theme.of(this).extension<AppMessageFieldStyle>()!;
 }

@@ -18,6 +18,7 @@ import '../extensions/app_option_style.dart';
 import '../extensions/app_digit_box_style.dart';
 import '../extensions/app_text_input_style.dart';
 import '../extensions/app_chat_input_field_style.dart';
+import '../extensions/app_message_field_style.dart';
 import 'app_fonts.dart';
 
 /// The single [ThemeData] used throughout the app.
@@ -47,5 +48,6 @@ final ThemeData darkTheme = ThemeData(
     AppDigitBoxStyle.dark(),
     AppTextInputStyle.dark(),
     AppChatInputFieldStyle.dark(),
+    AppMessageFieldStyle.dark(),
   ],
 );
