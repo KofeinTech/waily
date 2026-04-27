@@ -44,7 +44,7 @@ class AppRoutes {
   static const Map<String, String> tabLabels = {
     home: 'Home',
     meal: 'Meal',
-    chat: 'Chat',
+    chat: 'Waily',
     hydration: 'Hydration',
     profile: 'Profile',
   };
