@@ -20,6 +20,7 @@ import '../extensions/app_text_input_style.dart';
 import '../extensions/app_chat_input_field_style.dart';
 import '../extensions/app_message_field_style.dart';
 import '../extensions/app_menu_item_container_style.dart';
+import '../extensions/app_slide_button_style.dart';
 import 'app_fonts.dart';
 
 /// The single [ThemeData] used throughout the app.
@@ -51,5 +52,6 @@ final ThemeData darkTheme = ThemeData(
     AppChatInputFieldStyle.dark(),
     AppMessageFieldStyle.dark(),
     AppMenuItemContainerStyle.dark(),
+    AppSlideButtonStyle.dark(),
   ],
 );

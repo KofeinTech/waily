@@ -20,6 +20,7 @@ import 'app_text_input_style.dart';
 import 'app_chat_input_field_style.dart';
 import 'app_message_field_style.dart';
 import 'app_menu_item_container_style.dart';
+import 'app_slide_button_style.dart';
 
 /// BuildContext shortcuts for all UI kit ThemeExtensions.
 ///
@@ -66,4 +67,6 @@ extension ThemeContextExtension on BuildContext {
       Theme.of(this).extension<AppMessageFieldStyle>()!;
   AppMenuItemContainerStyle get appMenuItemContainerStyle =>
       Theme.of(this).extension<AppMenuItemContainerStyle>()!;
+  AppSlideButtonStyle get appSlideButtonStyle =>
+      Theme.of(this).extension<AppSlideButtonStyle>()!;
 }

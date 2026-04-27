@@ -18,6 +18,7 @@ import 'sections/progress_bars_section.dart';
 import 'sections/big_dropdowns_section.dart';
 import 'sections/segmented_buttons_section.dart';
 import 'sections/segmented_pickers_section.dart';
+import 'sections/slide_buttons_section.dart';
 import 'sections/switchers_section.dart';
 import 'sections/text_fields_section.dart';
 import 'sections/text_inputs_section.dart';
@@ -56,6 +57,7 @@ class ShowcaseHome extends StatelessWidget {
           ChatInputFieldsSection(),
           MessageFieldsSection(),
           MenuItemsSection(),
+          SlideButtonsSection(),
         ],
       ),
     );

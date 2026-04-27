@@ -30,6 +30,7 @@ export 'extensions/app_text_input_style.dart';
 export 'extensions/app_chat_input_field_style.dart';
 export 'extensions/app_message_field_style.dart';
 export 'extensions/app_menu_item_container_style.dart';
+export 'extensions/app_slide_button_style.dart';
 export 'extensions/theme_context_extension.dart';
 
 // Components
@@ -37,6 +38,7 @@ export 'components/buttons/waily_button.dart';
 export 'components/buttons/waily_icon_button.dart';
 export 'components/buttons/waily_link.dart';
 export 'components/buttons/waily_segmented_button.dart';
+export 'components/buttons/waily_slide_button.dart';
 export 'components/inputs/waily_text_field.dart';
 export 'components/inputs/waily_checkbox.dart';
 export 'components/inputs/waily_switcher.dart';
