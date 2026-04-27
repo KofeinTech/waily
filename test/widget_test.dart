@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,11 +23,17 @@ ENABLE_LOGGING=false
     resetEnvForTesting();
   });
 
-  testWidgets('App boots into the sign-in placeholder when no token is stored',
+  testWidgets('App boots into the Home tab via the always-on stub gate',
       (WidgetTester tester) async {
     await tester.pumpWidget(const App());
     await tester.pumpAndSettle();
 
-    expect(find.text('Sign-in coming soon'), findsOneWidget);
+    // The Home placeholder body and the active bottom-nav label both
+    // render the string 'Home', so a plain text find is ambiguous.
+    expect(find.text('Home'), findsNWidgets(2));
+    expect(
+      find.byKey(const ValueKey('app-bottom-nav-item-home')),
+      findsOneWidget,
+    );
   });
 }

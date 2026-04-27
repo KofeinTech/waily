@@ -23,32 +23,24 @@ abstract class AuthSessionGate extends ChangeNotifier {
 const String authTokenStorageKey = 'auth_token';
 
 /// Default implementation until the auth feature ships.
+///
+/// Defaults to authenticated so the dev build can reach the shell
+/// without going through a real sign-in flow. `refresh()` is a no-op —
+/// the real `AuthCubit`-backed gate that replaces this binding will
+/// re-introduce token reads, sign-out, and refresh-on-change.
 @LazySingleton(as: AuthSessionGate)
 class StubAuthSessionGate extends ChangeNotifier implements AuthSessionGate {
   StubAuthSessionGate(this._secureStorage);
 
+  // ignore: unused_field
   final SecureStorage _secureStorage;
 
-  bool _isAuthenticated = false;
-
   @override
-  bool get isAuthenticated => _isAuthenticated;
+  bool get isAuthenticated => true;
 
   @override
   Future<void> refresh() async {
-    final next = await _readToken();
-    if (next != _isAuthenticated) {
-      _isAuthenticated = next;
-      notifyListeners();
-    }
-  }
-
-  Future<bool> _readToken() async {
-    try {
-      final token = await _secureStorage.read(authTokenStorageKey);
-      return token != null && token.isNotEmpty;
-    } catch (_) {
-      return false;
-    }
+    // No-op: stub always grants access. The real auth gate will re-read
+    // the token here and call notifyListeners() on transitions.
   }
 }
