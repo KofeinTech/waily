@@ -7,6 +7,7 @@ import 'app_card_style.dart';
 import 'app_icon_button_style.dart';
 import 'app_link_style.dart';
 import 'app_checkbox_style.dart';
+import 'app_switcher_style.dart';
 
 /// BuildContext shortcuts for all UI kit ThemeExtensions.
 ///
@@ -28,4 +29,6 @@ extension ThemeContextExtension on BuildContext {
   AppLinkStyle get appLinkStyle => Theme.of(this).extension<AppLinkStyle>()!;
   AppCheckboxStyle get appCheckboxStyle =>
       Theme.of(this).extension<AppCheckboxStyle>()!;
+  AppSwitcherStyle get appSwitcherStyle =>
+      Theme.of(this).extension<AppSwitcherStyle>()!;
 }
