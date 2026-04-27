@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:waily/core/gen/assets.gen.dart';
 import '../../extensions/theme_context_extension.dart';
+import '../icons/waily_icon.dart';
 
 /// Button visual type. Maps to the `Type` axis of the Figma `Button`
 /// component-set.
@@ -30,6 +32,12 @@ class WailyButton extends StatelessWidget {
     required this.isLoading,
     required this.isDisabled,
     required this.expanded,
+    this.leadingIcon,
+    this.actionIcon,
+    this.leadingIconColor,
+    this.actionIconColor,
+    this.leadingIconSize,
+    this.actionIconSize,
     super.key,
   });
 
@@ -42,6 +50,12 @@ class WailyButton extends StatelessWidget {
     bool isLoading = false,
     bool isDisabled = false,
     bool expanded = false,
+    SvgGenImage? leadingIcon,
+    SvgGenImage? actionIcon,
+    Color? leadingIconColor,
+    Color? actionIconColor,
+    double? leadingIconSize,
+    double? actionIconSize,
   }) => WailyButton._(
     key: key,
     type: WailyButtonType.primary,
@@ -51,6 +65,12 @@ class WailyButton extends StatelessWidget {
     isLoading: isLoading,
     isDisabled: isDisabled,
     expanded: expanded,
+    leadingIcon: leadingIcon,
+    actionIcon: actionIcon,
+    leadingIconColor: leadingIconColor,
+    actionIconColor: actionIconColor,
+    leadingIconSize: leadingIconSize,
+    actionIconSize: actionIconSize,
   );
 
   /// Secondary button — filled white surface.
@@ -62,6 +82,12 @@ class WailyButton extends StatelessWidget {
     bool isLoading = false,
     bool isDisabled = false,
     bool expanded = false,
+    SvgGenImage? leadingIcon,
+    SvgGenImage? actionIcon,
+    Color? leadingIconColor,
+    Color? actionIconColor,
+    double? leadingIconSize,
+    double? actionIconSize,
   }) => WailyButton._(
     key: key,
     type: WailyButtonType.secondary,
@@ -71,6 +97,12 @@ class WailyButton extends StatelessWidget {
     isLoading: isLoading,
     isDisabled: isDisabled,
     expanded: expanded,
+    leadingIcon: leadingIcon,
+    actionIcon: actionIcon,
+    leadingIconColor: leadingIconColor,
+    actionIconColor: actionIconColor,
+    leadingIconSize: leadingIconSize,
+    actionIconSize: actionIconSize,
   );
 
   final WailyButtonType type;
@@ -80,6 +112,15 @@ class WailyButton extends StatelessWidget {
   final bool isLoading;
   final bool isDisabled;
   final bool expanded;
+
+  /// Optional icons (hidden while [isLoading]). Colour and size default to
+  /// the button foreground and per-size icon token respectively.
+  final SvgGenImage? leadingIcon;
+  final SvgGenImage? actionIcon;
+  final Color? leadingIconColor;
+  final Color? actionIconColor;
+  final double? leadingIconSize;
+  final double? actionIconSize;
 
   bool get _interactive => !isDisabled && !isLoading && onPressed != null;
 
@@ -105,6 +146,7 @@ class WailyButton extends StatelessWidget {
     final padding = isSmall ? s.paddingSmall : s.paddingDefault;
     final height = isSmall ? s.heightSmall : s.heightDefault;
     final textStyle = isSmall ? s.textStyleSmall : s.textStyleDefault;
+    final iconSize = isSmall ? s.iconSizeSmall : s.iconSizeDefault;
     final spinner = _spinnerMetrics(size);
 
     final Color background = isDisabled
@@ -132,7 +174,17 @@ class WailyButton extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(foreground),
             ),
           )
-        : Text(label, style: textStyle.copyWith(color: foreground));
+        : _WailyButtonContent(
+            label: label,
+            textStyle: textStyle.copyWith(color: foreground),
+            leadingIcon: leadingIcon,
+            actionIcon: actionIcon,
+            leadingIconColor: leadingIconColor ?? foreground,
+            actionIconColor: actionIconColor ?? foreground,
+            leadingIconSize: leadingIconSize ?? iconSize,
+            actionIconSize: actionIconSize ?? iconSize,
+            iconGap: s.iconGap,
+          );
 
     return _WailyButtonSurface(
       background: background,
@@ -143,6 +195,64 @@ class WailyButton extends StatelessWidget {
       expanded: expanded,
       onTap: _interactive ? onPressed : null,
       child: child,
+    );
+  }
+}
+
+/// Renders the non-loading button content: optional leading icon, label,
+/// optional trailing icon. Skips null slots and the adjacent gap entirely.
+class _WailyButtonContent extends StatelessWidget {
+  const _WailyButtonContent({
+    required this.label,
+    required this.textStyle,
+    required this.leadingIcon,
+    required this.actionIcon,
+    required this.leadingIconColor,
+    required this.actionIconColor,
+    required this.leadingIconSize,
+    required this.actionIconSize,
+    required this.iconGap,
+  });
+
+  final String label;
+  final TextStyle textStyle;
+  final SvgGenImage? leadingIcon;
+  final SvgGenImage? actionIcon;
+  final Color leadingIconColor;
+  final Color actionIconColor;
+  final double leadingIconSize;
+  final double actionIconSize;
+  final double iconGap;
+
+  @override
+  Widget build(BuildContext context) {
+    final children = <Widget>[];
+    if (leadingIcon != null) {
+      children.add(
+        WailyIcon(
+          icon: leadingIcon!,
+          size: leadingIconSize,
+          color: leadingIconColor,
+        ),
+      );
+      children.add(SizedBox(width: iconGap));
+    }
+    children.add(Text(label, style: textStyle));
+    if (actionIcon != null) {
+      children.add(SizedBox(width: iconGap));
+      children.add(
+        WailyIcon(
+          icon: actionIcon!,
+          size: actionIconSize,
+          color: actionIconColor,
+        ),
+      );
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: children,
     );
   }
 }

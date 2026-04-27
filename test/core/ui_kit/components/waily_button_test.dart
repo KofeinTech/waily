@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:waily/core/gen/assets.gen.dart';
 import 'package:waily/core/ui_kit/components/buttons/waily_button.dart';
+import 'package:waily/core/ui_kit/components/icons/waily_icon.dart';
 import 'package:waily/core/ui_kit/extensions/app_button_style.dart';
 import '../helpers/test_theme_wrapper.dart';
 
@@ -101,6 +103,87 @@ void main() {
       );
       final size = tester.getSize(find.byType(WailyButton));
       expect(size.height, 52);
+    });
+
+    testWidgets(
+      'primary with leadingIcon renders WailyIcon at the leading position',
+      (tester) async {
+        await tester.pumpWidget(
+          TestThemeWrapper(
+            child: WailyButton.primary(
+              label: 'Continue',
+              onPressed: () {},
+              leadingIcon: Assets.icons.common.arrow,
+            ),
+          ),
+        );
+        expect(find.byType(WailyIcon), findsOneWidget);
+        final icon = tester.widget<WailyIcon>(find.byType(WailyIcon));
+        expect(icon.icon, Assets.icons.common.arrow);
+      },
+    );
+
+    testWidgets(
+      'primary with both leading and action icons renders two WailyIcons',
+      (tester) async {
+        await tester.pumpWidget(
+          TestThemeWrapper(
+            child: WailyButton.primary(
+              label: 'Continue',
+              onPressed: () {},
+              leadingIcon: Assets.icons.common.copy,
+              actionIcon: Assets.icons.common.arrow,
+            ),
+          ),
+        );
+        expect(find.byType(WailyIcon), findsNWidgets(2));
+      },
+    );
+
+    testWidgets('loading hides icons', (tester) async {
+      await tester.pumpWidget(
+        TestThemeWrapper(
+          child: WailyButton.primary(
+            label: 'Loading',
+            onPressed: () {},
+            isLoading: true,
+            leadingIcon: Assets.icons.common.copy,
+            actionIcon: Assets.icons.common.arrow,
+          ),
+        ),
+      );
+      expect(find.byType(WailyIcon), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('leadingIconColor overrides foreground', (tester) async {
+      await tester.pumpWidget(
+        TestThemeWrapper(
+          child: WailyButton.primary(
+            label: 'Continue',
+            onPressed: () {},
+            leadingIcon: Assets.icons.common.arrow,
+            leadingIconColor: Colors.red,
+          ),
+        ),
+      );
+      final icon = tester.widget<WailyIcon>(find.byType(WailyIcon));
+      expect(icon.color, Colors.red);
+    });
+
+    testWidgets('leadingIconSize overrides default', (tester) async {
+      await tester.pumpWidget(
+        TestThemeWrapper(
+          child: WailyButton.primary(
+            label: 'Continue',
+            onPressed: () {},
+            leadingIcon: Assets.icons.common.arrow,
+            leadingIconSize: 24,
+          ),
+        ),
+      );
+      final icon = tester.widget<WailyIcon>(find.byType(WailyIcon));
+      expect(icon.size, 24);
     });
 
     testWidgets(

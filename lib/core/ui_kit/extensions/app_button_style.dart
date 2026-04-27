@@ -31,6 +31,9 @@ class AppButtonStyle extends ThemeExtension<AppButtonStyle> {
     required this.heightSmall,
     required this.textStyleDefault,
     required this.textStyleSmall,
+    required this.iconSizeDefault,
+    required this.iconSizeSmall,
+    required this.iconGap,
   });
 
   final Color primaryBackground;
@@ -49,6 +52,17 @@ class AppButtonStyle extends ThemeExtension<AppButtonStyle> {
   final double heightSmall;
   final TextStyle textStyleDefault;
   final TextStyle textStyleSmall;
+
+  /// Default leading/trailing icon size for [WailyButtonSize.defaultSize].
+  /// Figma `Button` shows 16x16 icon canvas for Default size variants.
+  final double iconSizeDefault;
+
+  /// Default leading/trailing icon size for [WailyButtonSize.small].
+  /// Figma `Button` shows 16x16 icon canvas for Small size variants.
+  final double iconSizeSmall;
+
+  /// Gap between an icon slot and the label.
+  final double iconGap;
 
   factory AppButtonStyle.dark() => AppButtonStyle._(
     // Primary fill: Figma Button / Type=Primary, State=Default => #D4E1FF.
@@ -79,6 +93,11 @@ class AppButtonStyle extends ThemeExtension<AppButtonStyle> {
     heightSmall: 42, // Figma Small size height
     textStyleDefault: AppTypography.s16w500(),
     textStyleSmall: AppTypography.s14w500(),
+    // Figma `Button` icon canvas (leading/trailing) — 16x16 for both sizes.
+    iconSizeDefault: 16,
+    iconSizeSmall: 16,
+    // Gap between icon and label — AppSpacing.s.
+    iconGap: AppSpacing.s,
   );
 
   @override
@@ -99,6 +118,9 @@ class AppButtonStyle extends ThemeExtension<AppButtonStyle> {
     double? heightSmall,
     TextStyle? textStyleDefault,
     TextStyle? textStyleSmall,
+    double? iconSizeDefault,
+    double? iconSizeSmall,
+    double? iconGap,
   }) => AppButtonStyle._(
     primaryBackground: primaryBackground ?? this.primaryBackground,
     primaryPressedBackground:
@@ -118,6 +140,9 @@ class AppButtonStyle extends ThemeExtension<AppButtonStyle> {
     heightSmall: heightSmall ?? this.heightSmall,
     textStyleDefault: textStyleDefault ?? this.textStyleDefault,
     textStyleSmall: textStyleSmall ?? this.textStyleSmall,
+    iconSizeDefault: iconSizeDefault ?? this.iconSizeDefault,
+    iconSizeSmall: iconSizeSmall ?? this.iconSizeSmall,
+    iconGap: iconGap ?? this.iconGap,
   );
 
   @override
@@ -173,6 +198,9 @@ class AppButtonStyle extends ThemeExtension<AppButtonStyle> {
       textStyleSmall:
           TextStyle.lerp(textStyleSmall, other.textStyleSmall, t) ??
           textStyleSmall,
+      iconSizeDefault: t < 0.5 ? iconSizeDefault : other.iconSizeDefault,
+      iconSizeSmall: t < 0.5 ? iconSizeSmall : other.iconSizeSmall,
+      iconGap: t < 0.5 ? iconGap : other.iconGap,
     );
   }
 }

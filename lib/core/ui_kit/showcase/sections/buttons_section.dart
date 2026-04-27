@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waily/core/gen/assets.gen.dart';
 import '../../components/buttons/waily_button.dart';
 import 'variant_grid.dart';
 
@@ -101,6 +102,41 @@ class ButtonsSection extends StatelessWidget {
             onPressed: () {},
             size: WailyButtonSize.small,
             isLoading: true,
+          ),
+        ),
+        (
+          label: 'Primary / Leading icon',
+          child: WailyButton.primary(
+            label: 'Continue',
+            onPressed: () {},
+            leadingIcon: Assets.icons.common.arrow,
+          ),
+        ),
+        (
+          label: 'Primary / Action icon',
+          child: WailyButton.primary(
+            label: 'Continue',
+            onPressed: () {},
+            actionIcon: Assets.icons.common.arrow,
+          ),
+        ),
+        (
+          label: 'Primary / Both icons',
+          child: WailyButton.primary(
+            label: 'Continue',
+            onPressed: () {},
+            leadingIcon: Assets.icons.common.copy,
+            actionIcon: Assets.icons.common.arrow,
+          ),
+        ),
+        (
+          label: 'Secondary / Both icons / Small',
+          child: WailyButton.secondary(
+            label: 'Skip',
+            onPressed: () {},
+            size: WailyButtonSize.small,
+            leadingIcon: Assets.icons.common.copy,
+            actionIcon: Assets.icons.common.arrow,
           ),
         ),
       ],
