@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
+import 'core/ui_kit/theme/app_theme.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+void main() => runApp(const WailyApp());
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class WailyApp extends StatelessWidget {
+  const WailyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      darkTheme: darkTheme,
+      themeMode: ThemeMode.dark,
+      home: const Scaffold(),
     );
   }
 }

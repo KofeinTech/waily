@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:waily/main.dart';
 
 void main() {
-  testWidgets('MainApp builds without error', (WidgetTester tester) async {
-    await tester.pumpWidget(const MainApp());
+  testWidgets('WailyApp builds without error', (WidgetTester tester) async {
+    await tester.pumpWidget(const WailyApp());
     expect(find.byType(MaterialApp), findsOneWidget);
-    expect(find.text('Hello World!'), findsOneWidget);
+    expect(find.byType(Scaffold), findsOneWidget);
   });
 }
