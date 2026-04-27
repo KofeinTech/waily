@@ -1,3 +1,4 @@
+// ignore_for_file: library_private_types_in_public_api
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,9 +38,9 @@ extension EnvX on _Env {
   bool get isProd => this is _Prod;
 
   _EnvData get data => switch (this) {
-        _Dev(:final data) => data,
-        _Prod(:final data) => data,
-      };
+    _Dev(:final data) => data,
+    _Prod(:final data) => data,
+  };
 }
 
 @visibleForTesting
