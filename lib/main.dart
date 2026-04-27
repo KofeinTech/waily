@@ -1,18 +1,9 @@
 import 'package:flutter/material.dart';
-import 'core/ui_kit/theme/app_theme.dart';
+import 'package:waily/app.dart';
+import 'package:waily/core/env/env.dart';
 
-void main() => runApp(const WailyApp());
-
-class WailyApp extends StatelessWidget {
-  const WailyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      darkTheme: darkTheme,
-      themeMode: ThemeMode.dark,
-      home: const Scaffold(),
-    );
-  }
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initEnv();
+  runApp(const WailyApp());
 }
