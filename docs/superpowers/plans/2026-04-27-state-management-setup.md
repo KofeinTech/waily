@@ -13,7 +13,7 @@
 **Conventions used in every task:**
 - All shell commands assume CWD = repo root.
 - All Flutter commands use `fvm flutter ...`.
-- After every code change to a `freezed` / `injectable` / `mockito` annotated file: `fvm flutter pub run build_runner build --delete-conflicting-outputs`.
+- After every code change to a `freezed` / `injectable` / `mockito` annotated file: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`. Note: `--force-jit` is REQUIRED — without it `build_runner` 2.14.1 fails in AOT mode because the transitive `objective_c` 9.3.0 dep declares native build hooks that `dart compile exe` rejects. The flag goes AFTER `build_runner build`, not before.
 - After every file edit, run `dart format <file>` (the repo hook does this automatically — confirm with `git diff --check`).
 - `flutter analyze` must exit 0 before each commit.
 - Do not commit generated `.g.dart` / `.freezed.dart` / `.config.dart` / `.mocks.dart` files only — commit them with the source file that produced them.
@@ -110,7 +110,7 @@ void configureDependencies() => getIt.init();
 
 - [ ] **Step 3: Run codegen**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`
 Expected: exits 0, creates `lib/core/di/injection.config.dart` registering `Talker` as a singleton.
 
 - [ ] **Step 4: Sanity-check the generated file**
@@ -208,7 +208,7 @@ sealed class AppNotification with _$AppNotification {
 
 - [ ] **Step 2: Run codegen**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`
 Expected: creates `app_notification.freezed.dart`.
 
 - [ ] **Step 3: Write the test**
@@ -429,7 +429,7 @@ class NotificationManagerImpl implements NotificationManager {
 
 - [ ] **Step 5: Run codegen and tests**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs && fvm flutter test test/features/core/data/managers/notification_manager_impl_test.dart`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs && fvm flutter test test/features/core/data/managers/notification_manager_impl_test.dart`
 Expected: codegen exits 0; 2 tests pass; `injection.config.dart` now references `NotificationManagerImpl`.
 
 - [ ] **Step 6: Commit**
@@ -468,7 +468,7 @@ void main() {}
 
 - [ ] **Step 2: Run codegen**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`
 Expected: creates `test/features/core/mocks.mocks.dart`.
 
 - [ ] **Step 3: Write the failing test**
@@ -910,7 +910,7 @@ class TriggerDemoErrorUseCase extends AsyncUseCase<NoParams, void> {
 
 - [ ] **Step 3: Run codegen**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`
 Expected: `injection.config.dart` now contains `TriggerDemoErrorUseCase` registration.
 
 - [ ] **Step 4: Verify analyze + run all tests so far**
@@ -1017,7 +1017,7 @@ class LocalStorageImpl implements LocalStorage {
 
 - [ ] **Step 3: Run codegen**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`
 Expected: `injection.config.dart` registers `LocalStorageImpl as LocalStorage`.
 
 - [ ] **Step 4: Verify analyze**
@@ -1088,7 +1088,7 @@ class SecureStorageImpl implements SecureStorage {
 
 - [ ] **Step 3: Run codegen**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`
 Expected: `injection.config.dart` registers `SecureStorageImpl as SecureStorage`.
 
 - [ ] **Step 4: Verify analyze**
@@ -1136,7 +1136,7 @@ sealed class AppNotificationState with _$AppNotificationState {
 
 - [ ] **Step 2: Run codegen**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`
 Expected: creates `app_notification_state.freezed.dart`.
 
 - [ ] **Step 3: Write the failing cubit test**
@@ -1238,7 +1238,7 @@ class AppNotificationCubit extends Cubit<AppNotificationState> {
 
 - [ ] **Step 6: Run codegen + tests**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs && fvm flutter test test/features/core/presentation/bloc/app_notification_cubit_test.dart`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs && fvm flutter test test/features/core/presentation/bloc/app_notification_cubit_test.dart`
 Expected: codegen exits 0; 2 tests pass.
 
 - [ ] **Step 7: Commit**
@@ -1829,7 +1829,7 @@ git commit -m "docs(wail-12): add State management section to README"
 
 - [ ] **Step 1: Clean build of generated files**
 
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+Run: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`
 Expected: exits 0, no errors.
 
 - [ ] **Step 2: Static analysis**
