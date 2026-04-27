@@ -39,6 +39,7 @@ export 'extensions/app_picker_card_style.dart';
 export 'extensions/theme_context_extension.dart';
 
 // Components
+export 'components/dev_env_banner.dart';
 export 'components/buttons/waily_button.dart';
 export 'components/buttons/waily_icon_button.dart';
 export 'components/buttons/waily_link.dart';
