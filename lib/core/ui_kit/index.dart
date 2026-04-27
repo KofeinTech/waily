@@ -33,6 +33,7 @@ export 'extensions/app_menu_item_container_style.dart';
 export 'extensions/app_slide_button_style.dart';
 export 'extensions/app_history_card_style.dart';
 export 'extensions/app_list_element_style.dart';
+export 'extensions/app_chat_tip_style.dart';
 export 'extensions/theme_context_extension.dart';
 
 // Components
@@ -58,4 +59,5 @@ export 'components/cards/waily_card.dart';
 export 'components/containers/waily_menu_item_container.dart';
 export 'components/containers/waily_history_card.dart';
 export 'components/containers/waily_list_element.dart';
+export 'components/containers/waily_chat_tip.dart';
 export 'components/icons/waily_icon.dart';
