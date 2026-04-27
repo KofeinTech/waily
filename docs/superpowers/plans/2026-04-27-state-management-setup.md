@@ -1261,6 +1261,8 @@ The test uses a real `AppNotificationCubit` driven by a controllable `MockNotifi
 
 - [ ] **Step 1: Write the failing widget test**
 
+NOTE: cubit and controller are created INSIDE each `testWidgets` body (not in `setUp`). This is required because `tester.pump()` runs in a `FakeAsync` zone — `StreamController.broadcast()` instances created in `setUp` (outside the FakeAsync zone) bind to the real event loop, and stream events never flush via `pump()`. Use `addTearDown` for cleanup.
+
 `test/features/core/presentation/widgets/app_notification_builder_test.dart`:
 
 ```dart
@@ -1278,34 +1280,25 @@ import '../../mocks.mocks.dart';
 
 void main() {
   group('AppNotificationBuilder', () {
-    late MockNotificationManager manager;
-    late StreamController<AppNotification> controller;
-    late AppNotificationCubit cubit;
-
-    setUp(() {
-      manager = MockNotificationManager();
-      controller = StreamController<AppNotification>.broadcast();
-      when(manager.notificationStream).thenAnswer((_) => controller.stream);
-      cubit = AppNotificationCubit(manager);
-    });
-
-    tearDown(() async {
-      await cubit.close();
-      await controller.close();
-    });
-
-    Widget wrap() => MaterialApp(
-          home: BlocProvider<AppNotificationCubit>.value(
-            value: cubit,
-            child: const AppNotificationBuilder(
-              child: Scaffold(body: Text('home')),
-            ),
-          ),
-        );
-
     testWidgets('renders SnackBar with success message on received(success)',
         (tester) async {
-      await tester.pumpWidget(wrap());
+      final manager = MockNotificationManager();
+      final controller = StreamController<AppNotification>.broadcast();
+      when(manager.notificationStream).thenAnswer((_) => controller.stream);
+      final cubit = AppNotificationCubit(manager);
+      addTearDown(() async {
+        await cubit.close();
+        await controller.close();
+      });
+
+      await tester.pumpWidget(MaterialApp(
+        home: BlocProvider<AppNotificationCubit>.value(
+          value: cubit,
+          child: const AppNotificationBuilder(
+            child: Scaffold(body: Text('home')),
+          ),
+        ),
+      ));
 
       controller.add(const AppNotification.success(message: 'ok'));
       await tester.pump(); // process the stream event
@@ -1317,7 +1310,23 @@ void main() {
 
     testWidgets('renders SnackBar with error message on received(error)',
         (tester) async {
-      await tester.pumpWidget(wrap());
+      final manager = MockNotificationManager();
+      final controller = StreamController<AppNotification>.broadcast();
+      when(manager.notificationStream).thenAnswer((_) => controller.stream);
+      final cubit = AppNotificationCubit(manager);
+      addTearDown(() async {
+        await cubit.close();
+        await controller.close();
+      });
+
+      await tester.pumpWidget(MaterialApp(
+        home: BlocProvider<AppNotificationCubit>.value(
+          value: cubit,
+          child: const AppNotificationBuilder(
+            child: Scaffold(body: Text('home')),
+          ),
+        ),
+      ));
 
       controller.add(const AppNotification.error(message: 'boom'));
       await tester.pump();
