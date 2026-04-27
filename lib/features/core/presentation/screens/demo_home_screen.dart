@@ -6,6 +6,13 @@ import '../../domain/managers/notification_manager.dart';
 import '../../domain/use_cases/no_params.dart';
 import '../../domain/use_cases/trigger_demo_error_use_case.dart';
 
+/// DEMO ONLY — do not copy this pattern.
+///
+/// This screen exercises the notification pipeline end-to-end by resolving
+/// [NotificationManager] and [TriggerDemoErrorUseCase] straight from `getIt`
+/// inside button callbacks. Production widgets MUST NOT do this — they drive
+/// cubits, and cubits drive use cases. See `docs/state-management.md` for
+/// the conventional flow.
 class DemoHomeScreen extends StatelessWidget {
   const DemoHomeScreen({super.key});
 
