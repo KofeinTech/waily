@@ -10,6 +10,7 @@ import 'app_checkbox_style.dart';
 import 'app_switcher_style.dart';
 import 'app_chip_style.dart';
 import 'app_progress_bar_style.dart';
+import 'app_loader_style.dart';
 
 /// BuildContext shortcuts for all UI kit ThemeExtensions.
 ///
@@ -36,4 +37,6 @@ extension ThemeContextExtension on BuildContext {
   AppChipStyle get appChipStyle => Theme.of(this).extension<AppChipStyle>()!;
   AppProgressBarStyle get appProgressBarStyle =>
       Theme.of(this).extension<AppProgressBarStyle>()!;
+  AppLoaderStyle get appLoaderStyle =>
+      Theme.of(this).extension<AppLoaderStyle>()!;
 }
