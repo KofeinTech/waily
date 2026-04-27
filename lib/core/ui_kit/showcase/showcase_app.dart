@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'core/ui_kit/theme/app_theme.dart';
+import '../theme/app_theme.dart';
+import 'showcase_home.dart';
 
-void main() => runApp(const WailyApp());
-
-class WailyApp extends StatelessWidget {
-  const WailyApp({super.key});
+class ShowcaseApp extends StatelessWidget {
+  const ShowcaseApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +11,7 @@ class WailyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       darkTheme: darkTheme,
       themeMode: ThemeMode.dark,
-      home: const Scaffold(),
+      home: const ShowcaseHome(),
     );
   }
 }
