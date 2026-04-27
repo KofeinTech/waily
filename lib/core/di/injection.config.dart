@@ -17,6 +17,8 @@ import 'package:waily/features/core/data/managers/notification_manager_impl.dart
     as _i95;
 import 'package:waily/features/core/domain/managers/notification_manager.dart'
     as _i349;
+import 'package:waily/features/core/domain/use_cases/trigger_demo_error_use_case.dart'
+    as _i374;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -30,6 +32,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i349.NotificationManager>(
       () => _i95.NotificationManagerImpl(),
       dispose: (i) => i.dispose(),
+    );
+    gh.lazySingleton<_i374.TriggerDemoErrorUseCase>(
+      () => _i374.TriggerDemoErrorUseCase(
+        gh<_i993.Talker>(),
+        gh<_i349.NotificationManager>(),
+      ),
     );
     return this;
   }
