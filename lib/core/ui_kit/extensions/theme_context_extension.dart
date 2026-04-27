@@ -12,6 +12,7 @@ import 'app_chip_style.dart';
 import 'app_progress_bar_style.dart';
 import 'app_loader_style.dart';
 import 'app_segmented_picker_style.dart';
+import 'app_segmented_button_style.dart';
 
 /// BuildContext shortcuts for all UI kit ThemeExtensions.
 ///
@@ -42,4 +43,6 @@ extension ThemeContextExtension on BuildContext {
       Theme.of(this).extension<AppLoaderStyle>()!;
   AppSegmentedPickerStyle get appSegmentedPickerStyle =>
       Theme.of(this).extension<AppSegmentedPickerStyle>()!;
+  AppSegmentedButtonStyle get appSegmentedButtonStyle =>
+      Theme.of(this).extension<AppSegmentedButtonStyle>()!;
 }

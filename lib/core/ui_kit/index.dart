@@ -22,12 +22,14 @@ export 'extensions/app_chip_style.dart';
 export 'extensions/app_progress_bar_style.dart';
 export 'extensions/app_loader_style.dart';
 export 'extensions/app_segmented_picker_style.dart';
+export 'extensions/app_segmented_button_style.dart';
 export 'extensions/theme_context_extension.dart';
 
 // Components
 export 'components/buttons/waily_button.dart';
 export 'components/buttons/waily_icon_button.dart';
 export 'components/buttons/waily_link.dart';
+export 'components/buttons/waily_segmented_button.dart';
 export 'components/inputs/waily_text_field.dart';
 export 'components/inputs/waily_checkbox.dart';
 export 'components/inputs/waily_switcher.dart';
