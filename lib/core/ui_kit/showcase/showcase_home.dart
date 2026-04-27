@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../extensions/theme_context_extension.dart';
+import '../theme/app_spacing.dart';
 
 class ShowcaseHome extends StatelessWidget {
   const ShowcaseHome({super.key});
@@ -13,12 +14,8 @@ class ShowcaseHome extends StatelessWidget {
         title: Text('UI Kit', style: context.appTextStyles.s18w500()),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
-          // Sections appended by later tasks. Order: Typography, Colors,
-          // Buttons, IconButtons, Inputs, Checkboxes, Switchers, Chips,
-          // Loaders, ProgressBar, Segmented, Cards, Lists, Calendar, Nav.
-        ],
+        padding: const EdgeInsets.all(AppSpacing.m),
+        children: const [],
       ),
     );
   }

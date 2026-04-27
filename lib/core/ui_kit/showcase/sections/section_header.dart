@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../extensions/theme_context_extension.dart';
+import '../../theme/app_spacing.dart';
 
 class ShowcaseSectionHeader extends StatelessWidget {
   const ShowcaseSectionHeader(this.title, {super.key});
@@ -9,7 +10,7 @@ class ShowcaseSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12, top: 24),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm, top: AppSpacing.l),
       child: Text(
         title,
         style: context.appTextStyles.s20w500(color: context.appColors.primary),
