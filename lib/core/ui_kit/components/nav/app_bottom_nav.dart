@@ -60,7 +60,7 @@ class AppBottomNav extends StatelessWidget {
   }
 }
 
-class _NavItem extends StatelessWidget {
+class _NavItem extends StatefulWidget {
   const _NavItem({
     required this.branch,
     required this.isActive,
@@ -72,7 +72,13 @@ class _NavItem extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
 
-  static const Duration _duration = Duration(milliseconds: 250);
+  @override
+  State<_NavItem> createState() => _NavItemState();
+}
+
+class _NavItemState extends State<_NavItem>
+    with SingleTickerProviderStateMixin {
+  static const Duration _duration = Duration(milliseconds: 300);
   static const Curve _curve = Curves.easeOutCubic;
 
   /// Content / Secondary / Disabled — white at 30% alpha.
@@ -81,6 +87,38 @@ class _NavItem extends StatelessWidget {
   /// Content / Primary / Inverted — full white.
   static const Color _activeIconColor = Color(0xFFFFFFFF);
 
+  late final AnimationController _controller;
+  late final Animation<double> _t;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: _duration,
+      value: widget.isActive ? 1.0 : 0.0,
+    );
+    _t = CurvedAnimation(parent: _controller, curve: _curve);
+  }
+
+  @override
+  void didUpdateWidget(covariant _NavItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      if (widget.isActive) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = context.appMenuItemContainerStyle;
@@ -88,59 +126,62 @@ class _NavItem extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Center(
-        child: AnimatedContainer(
-          duration: _duration,
-          curve: _curve,
-          height: s.height,
-          padding: EdgeInsets.symmetric(
-            horizontal: s.horizontalPadding,
-            vertical: s.verticalPadding,
-          ),
-          decoration: BoxDecoration(
-            color: isActive ? s.activeBackgroundColor : Colors.transparent,
-            borderRadius: BorderRadius.circular(s.borderRadius),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              TweenAnimationBuilder<Color?>(
-                duration: _duration,
-                curve: _curve,
-                tween: ColorTween(
-                  end: isActive ? _activeIconColor : _inactiveIconColor,
-                ),
-                builder: (context, color, _) => WailyIcon(
-                  icon: _iconFor(branch),
-                  size: s.iconSize,
-                  color: color ?? _inactiveIconColor,
-                ),
+        child: AnimatedBuilder(
+          animation: _t,
+          builder: (context, _) {
+            final value = _t.value;
+            final iconColor =
+                Color.lerp(_inactiveIconColor, _activeIconColor, value) ??
+                _inactiveIconColor;
+            final pillColor =
+                Color.lerp(
+                  Colors.transparent,
+                  s.activeBackgroundColor,
+                  value,
+                ) ??
+                Colors.transparent;
+            return Container(
+              height: s.height,
+              padding: EdgeInsets.symmetric(
+                horizontal: s.horizontalPadding,
+                vertical: s.verticalPadding,
               ),
-              AnimatedSize(
-                duration: _duration,
-                curve: _curve,
-                child: AnimatedSwitcher(
-                  duration: _duration,
-                  switchInCurve: _curve,
-                  switchOutCurve: _curve,
-                  transitionBuilder: (child, animation) =>
-                      FadeTransition(opacity: animation, child: child),
-                  child: isActive
-                      ? Padding(
-                          key: const ValueKey('label'),
-                          padding: EdgeInsets.only(left: s.itemSpacing),
-                          child: Text(
-                            AppRoutes.tabLabels[branch]!,
-                            style: t.s12w500(color: _activeIconColor),
+              decoration: BoxDecoration(
+                color: pillColor,
+                borderRadius: BorderRadius.circular(s.borderRadius),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  WailyIcon(
+                    icon: _iconFor(widget.branch),
+                    size: s.iconSize,
+                    color: iconColor,
+                  ),
+                  if (value > 0)
+                    ClipRect(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: value,
+                        child: Opacity(
+                          opacity: value,
+                          child: Padding(
+                            padding: EdgeInsets.only(left: s.itemSpacing),
+                            child: Text(
+                              AppRoutes.tabLabels[widget.branch]!,
+                              style: t.s12w500(color: _activeIconColor),
+                            ),
                           ),
-                        )
-                      : const SizedBox.shrink(key: ValueKey('no-label')),
-                ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
