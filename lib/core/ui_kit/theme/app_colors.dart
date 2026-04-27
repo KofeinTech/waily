@@ -29,6 +29,9 @@ class AppColors {
   static const textSecondary = Color(0xFF9EA3AE);
   static const textTertiary = Color(0xFF7F8799);
   static const textDisabled = Color(0xFF555A66);
+  static const textPlaceholder = Color(0xFF646C7E); // disabled label across Button, Input field, Chat Input, Chat Tip, Selector
+  static const textMuted = Color(0xFF8C8C8C); // icon/label on Segmented btn and Text Input
+  static const textInfo = Color(0xFF383333); // info text in List element
 
   // --- Semantic ---
   static const error = Color(0xFFD52D2D);
