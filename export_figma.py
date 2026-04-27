@@ -15,11 +15,13 @@ FILE_KEY = "fHb7WGklKtujnCbzxnLDdx"
 TOKEN = os.environ.get("FIGMA_API_KEY", "")
 DESIGN_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "design")
 SCREENS_DIR = f"{DESIGN_DIR}/screens"
+UI_KIT_DIR = f"{DESIGN_DIR}/ui_kit"
 ASSETS_DIR = f"{DESIGN_DIR}/assets"
 IMAGES_DIR = f"{ASSETS_DIR}/images"
 RATE_LIMIT_DELAY = 5  # seconds between API calls
 
 os.makedirs(SCREENS_DIR, exist_ok=True)
+os.makedirs(UI_KIT_DIR, exist_ok=True)
 os.makedirs(ASSETS_DIR, exist_ok=True)
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
@@ -79,25 +81,36 @@ if not file_data:
 
 time.sleep(RATE_LIMIT_DELAY)
 
-# Find Design page
+# Find Design and UI Kit pages
 design_page = None
+ui_kit_page = None
 for page in file_data["document"]["children"]:
-    if "Design" in page["name"]:
+    if design_page is None and "Design" in page["name"]:
         design_page = page
-        break
+    elif ui_kit_page is None and "UI Kit" in page["name"]:
+        ui_kit_page = page
 
 if not design_page:
     print("No Design page found!")
     sys.exit(1)
 
-# Collect screens (skip non-screen frames)
+# Collect screens from Design page (skip non-screen frames)
 skip_prefixes = ("Tools/", "Components", "label")
 screens = []
 for child in design_page.get("children", []):
     if child.get("type") == "FRAME" and not any(child["name"].startswith(p) for p in skip_prefixes):
-        screens.append({"id": child["id"], "name": child["name"]})
+        screens.append({"id": child["id"], "name": child["name"], "category": "screen"})
 
-print(f"Found {len(screens)} screens on '{design_page['name']}' page")
+# Collect UI kit components (no name filter — Components is fine here)
+ui_kit_items = []
+if ui_kit_page:
+    for child in ui_kit_page.get("children", []):
+        if child.get("type") == "FRAME":
+            ui_kit_items.append({"id": child["id"], "name": child["name"], "category": "ui_kit"})
+
+screens.extend(ui_kit_items)
+print(f"Found {len(screens) - len(ui_kit_items)} screens on '{design_page['name']}', "
+      f"{len(ui_kit_items)} components on '{ui_kit_page['name'] if ui_kit_page else 'no UI Kit'}'")
 
 # ── Step 2: Fetch full node data in batches of 15 ──
 print("\nStep 2: Fetching screen data...")
@@ -293,13 +306,14 @@ for screen in screens:
         "node": processed,
     }
 
+    target_dir = UI_KIT_DIR if screen.get("category") == "ui_kit" else SCREENS_DIR
     fname = sanitize_filename(sname)
     if not fname:
         fname = f"screen_{sid.replace(':', '_')}"
-    filepath = f"{SCREENS_DIR}/{fname}.json"
+    filepath = f"{target_dir}/{fname}.json"
 
     if os.path.exists(filepath):
-        filepath = f"{SCREENS_DIR}/{fname}_{sid.replace(':', '_')}.json"
+        filepath = f"{target_dir}/{fname}_{sid.replace(':', '_')}.json"
 
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(screen_json, f, indent=2, ensure_ascii=False)
@@ -477,7 +491,8 @@ Source: https://www.figma.com/design/{FILE_KEY}/Waily-Mobile-App
 Page:   {design_page['name']}
 
 Files created:
-  design/screens/    {len(screen_files)} screen JSON files
+  design/screens/    {sum(1 for f in screen_files if '/screens/' in f)} screen JSON files
+  design/ui_kit/     {sum(1 for f in screen_files if '/ui_kit/' in f)} UI kit component JSON files
   design/tokens.json ({len(tokens['colors'])} colors, {len(tokens['typography'])} text styles, {len(tokens['spacing'])} spacing values, {len(tokens['borderRadii'])} radii)
   design/assets/     {svg_count} SVG icons, {png_fallback_count} PNG fallback icons
   design/assets/images/ {len(all_image_refs)} image fills
