@@ -6,7 +6,7 @@
 
 **Architecture:** All cross-feature plumbing lives under `lib/features/core/` (per CLAUDE.md). DI is `injectable` + `get_it`. Notifications flow as `use case → NotificationException → AsyncUseCase base → NotificationManager.sendNotification → AppNotificationCubit → AppNotificationBuilder → SnackBar`. Persistence is two thin storage interfaces with concrete impls; no consumers ship in this ticket.
 
-**Tech Stack:** Flutter (FVM 3.38.6), `flutter_bloc`, `injectable` + `get_it`, `freezed`, `dartz`, `talker`, `go_router`, `shared_preferences`, `flutter_secure_storage`, `bloc_test`, `mockito`.
+**Tech Stack:** Flutter (FVM 3.38.6), `flutter_bloc`, `injectable` + `get_it`, `freezed`, `dartz`, `talker`, `go_router`, `shared_preferences`, `flutter_secure_storage`, `mockito`. (Note: `bloc_test` is intentionally NOT used — its current major pulls a `test` version incompatible with the Flutter SDK's pinned `test_api`. Cubit and widget tests use vanilla `mockito` + manual `StreamController` control instead.)
 
 **Spec:** `docs/superpowers/specs/2026-04-27-state-management-setup-design.md`
 
@@ -35,20 +35,12 @@ In the `dependencies:` block, after `talker:`, add:
   flutter_secure_storage: ^9.2.2
 ```
 
-- [ ] **Step 2: Add dev dep to `pubspec.yaml`**
-
-In the `dev_dependencies:` block, after `mockito: ^5.6.4`, add:
-
-```yaml
-  bloc_test: ^10.0.0
-```
-
-- [ ] **Step 3: Resolve dependencies**
+- [ ] **Step 2: Resolve dependencies**
 
 Run: `fvm flutter pub get`
-Expected: exits 0, no version conflicts. If `bloc_test` resolution fails because of bloc major mismatch, adjust the version (`^9.1.7` for bloc ^8, `^10.0.0` for bloc ^9) and retry.
+Expected: exits 0, no version conflicts.
 
-- [ ] **Step 4: Bump Android `minSdk` to 23**
+- [ ] **Step 3: Bump Android `minSdk` to 23**
 
 Open `android/app/build.gradle.kts`. Inside `android { defaultConfig { ... } }`, replace:
 
@@ -64,16 +56,16 @@ with:
 
 (Reason: `flutter_secure_storage` requires Android API 23+. Google Play minimum is already 23, so this is safe.)
 
-- [ ] **Step 5: Verify analyze still clean**
+- [ ] **Step 4: Verify analyze still clean**
 
 Run: `fvm flutter analyze`
 Expected: `No issues found!`
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add pubspec.yaml pubspec.lock android/app/build.gradle.kts
-git commit -m "chore(wail-12): add shared_preferences, flutter_secure_storage, bloc_test; bump Android minSdk to 23"
+git commit -m "chore(wail-12): add shared_preferences, flutter_secure_storage; bump Android minSdk to 23"
 ```
 
 ---
@@ -1154,7 +1146,6 @@ Expected: creates `app_notification_state.freezed.dart`.
 ```dart
 import 'dart:async';
 
-import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:waily/features/core/domain/entities/app_notification.dart';
@@ -1178,22 +1169,30 @@ void main() {
       await controller.close();
     });
 
-    blocTest<AppNotificationCubit, AppNotificationState>(
-      'emits received() when manager pushes a notification',
-      build: () => AppNotificationCubit(manager),
-      act: (_) => controller
-          .add(const AppNotification.success(message: 'hi')),
-      expect: () => const [
-        AppNotificationState.received(AppNotification.success(message: 'hi')),
-      ],
-    );
+    test('starts in initial state', () {
+      final cubit = AppNotificationCubit(manager);
+      expect(cubit.state, const AppNotificationState.initial());
+      cubit.close();
+    });
 
-    blocTest<AppNotificationCubit, AppNotificationState>(
-      'starts in initial state',
-      build: () => AppNotificationCubit(manager),
-      verify: (cubit) =>
-          expect(cubit.state, const AppNotificationState.initial()),
-    );
+    test('emits received() when manager pushes a notification', () async {
+      final cubit = AppNotificationCubit(manager);
+      final emitted = <AppNotificationState>[];
+      final sub = cubit.stream.listen(emitted.add);
+
+      controller.add(const AppNotification.success(message: 'hi'));
+      // Let the stream tick.
+      await Future<void>.delayed(Duration.zero);
+
+      expect(emitted, const [
+        AppNotificationState.received(
+          AppNotification.success(message: 'hi'),
+        ),
+      ]);
+
+      await sub.cancel();
+      await cubit.close();
+    });
   });
 }
 ```
@@ -1258,72 +1257,60 @@ git commit -m "feat(wail-12): add AppNotificationCubit + state listening to Noti
 **Files:**
 - Create: `lib/features/core/presentation/widgets/app_notification_builder.dart`
 - Test: `test/features/core/presentation/widgets/app_notification_builder_test.dart`
-- Modify: `test/features/core/mocks.dart` (add `AppNotificationCubit` to mocks)
 
-- [ ] **Step 1: Update mocks list**
+The test uses a real `AppNotificationCubit` driven by a controllable `MockNotificationManager` — no need to add `AppNotificationCubit` to the mocks list (that mocking was only needed because of `bloc_test`'s `whenListen`, which we are not using).
 
-Replace `test/features/core/mocks.dart` contents with:
-
-```dart
-import 'package:dio/dio.dart';
-import 'package:mockito/annotations.dart';
-import 'package:talker/talker.dart';
-import 'package:waily/features/core/domain/managers/notification_manager.dart';
-import 'package:waily/features/core/presentation/bloc/app_notification_cubit.dart';
-
-@GenerateMocks([Talker, NotificationManager, Dio, AppNotificationCubit])
-void main() {}
-```
-
-- [ ] **Step 2: Regenerate mocks**
-
-Run: `fvm flutter pub run build_runner build --delete-conflicting-outputs`
-Expected: `mocks.mocks.dart` now includes `MockAppNotificationCubit`.
-
-- [ ] **Step 3: Write the failing widget test**
+- [ ] **Step 1: Write the failing widget test**
 
 `test/features/core/presentation/widgets/app_notification_builder_test.dart`:
 
 ```dart
-import 'package:bloc_test/bloc_test.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 import 'package:waily/features/core/domain/entities/app_notification.dart';
 import 'package:waily/features/core/presentation/bloc/app_notification_cubit.dart';
-import 'package:waily/features/core/presentation/bloc/app_notification_state.dart';
 import 'package:waily/features/core/presentation/widgets/app_notification_builder.dart';
 
 import '../../mocks.mocks.dart';
 
-Widget _wrap(MockAppNotificationCubit cubit) {
-  return MaterialApp(
-    home: BlocProvider<AppNotificationCubit>.value(
-      value: cubit,
-      child: const AppNotificationBuilder(
-        child: Scaffold(body: Text('home')),
-      ),
-    ),
-  );
-}
-
 void main() {
   group('AppNotificationBuilder', () {
+    late MockNotificationManager manager;
+    late StreamController<AppNotification> controller;
+    late AppNotificationCubit cubit;
+
+    setUp(() {
+      manager = MockNotificationManager();
+      controller = StreamController<AppNotification>.broadcast();
+      when(manager.notificationStream).thenAnswer((_) => controller.stream);
+      cubit = AppNotificationCubit(manager);
+    });
+
+    tearDown(() async {
+      await cubit.close();
+      await controller.close();
+    });
+
+    Widget wrap() => MaterialApp(
+          home: BlocProvider<AppNotificationCubit>.value(
+            value: cubit,
+            child: const AppNotificationBuilder(
+              child: Scaffold(body: Text('home')),
+            ),
+          ),
+        );
+
     testWidgets('renders SnackBar with success message on received(success)',
         (tester) async {
-      final cubit = MockAppNotificationCubit();
-      whenListen(
-        cubit,
-        Stream.fromIterable(const [
-          AppNotificationState.received(
-            AppNotification.success(message: 'ok'),
-          ),
-        ]),
-        initialState: const AppNotificationState.initial(),
-      );
+      await tester.pumpWidget(wrap());
 
-      await tester.pumpWidget(_wrap(cubit));
-      await tester.pump();
+      controller.add(const AppNotification.success(message: 'ok'));
+      await tester.pump(); // process the stream event
+      await tester.pump(); // let the SnackBar animate in
 
       expect(find.byType(SnackBar), findsOneWidget);
       expect(find.text('ok'), findsOneWidget);
@@ -1331,18 +1318,10 @@ void main() {
 
     testWidgets('renders SnackBar with error message on received(error)',
         (tester) async {
-      final cubit = MockAppNotificationCubit();
-      whenListen(
-        cubit,
-        Stream.fromIterable(const [
-          AppNotificationState.received(
-            AppNotification.error(message: 'boom'),
-          ),
-        ]),
-        initialState: const AppNotificationState.initial(),
-      );
+      await tester.pumpWidget(wrap());
 
-      await tester.pumpWidget(_wrap(cubit));
+      controller.add(const AppNotification.error(message: 'boom'));
+      await tester.pump();
       await tester.pump();
 
       expect(find.byType(SnackBar), findsOneWidget);
@@ -1352,12 +1331,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 4: Run test (expect FAIL — widget missing)**
+- [ ] **Step 2: Run test (expect FAIL — widget missing)**
 
 Run: `fvm flutter test test/features/core/presentation/widgets/app_notification_builder_test.dart`
 Expected: FAIL with import error on `app_notification_builder.dart`.
 
-- [ ] **Step 5: Create the widget**
+- [ ] **Step 3: Create the widget**
 
 `lib/features/core/presentation/widgets/app_notification_builder.dart`:
 
@@ -1423,17 +1402,15 @@ class AppNotificationBuilder extends StatelessWidget {
 }
 ```
 
-- [ ] **Step 6: Run the test (expect PASS)**
+- [ ] **Step 4: Run the test (expect PASS)**
 
 Run: `fvm flutter test test/features/core/presentation/widgets/app_notification_builder_test.dart`
 Expected: 2 tests pass.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add lib/features/core/presentation/widgets/ \
-        test/features/core/mocks.dart \
-        test/features/core/mocks.mocks.dart \
         test/features/core/presentation/widgets/
 git commit -m "feat(wail-12): add AppNotificationBuilder rendering SnackBar per variant"
 ```
