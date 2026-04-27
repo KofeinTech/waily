@@ -161,14 +161,24 @@ class _NavItemState extends State<_NavItem>
                     sizeFactor: _expand,
                     child: FadeTransition(
                       opacity: _expand,
-                      child: Padding(
-                        padding: EdgeInsets.only(left: s.itemSpacing),
-                        child: Text(
-                          AppRoutes.tabLabels[widget.branch]!,
-                          style: t.s12w500(color: _activeIconColor),
-                          maxLines: 1,
-                          softWrap: false,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(width: s.itemSpacing),
+                          Text(
+                            AppRoutes.tabLabels[widget.branch]!,
+                            style: t.s12w500(color: _activeIconColor),
+                            maxLines: 1,
+                            softWrap: false,
+                            textHeightBehavior: const TextHeightBehavior(
+                              applyHeightToFirstAscent: false,
+                              applyHeightToLastDescent: false,
+                              leadingDistribution:
+                                  TextLeadingDistribution.even,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
