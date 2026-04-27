@@ -22,6 +22,10 @@ dependencies:
   talker: ^5.1.16
   shared_preferences: ^2.3.2
   flutter_secure_storage: ^9.2.2
+  drift: ^2.21.0
+  drift_flutter: ^0.2.4
+  sqlite3_flutter_libs: ^0.5.27
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -34,6 +38,7 @@ dev_dependencies:
   retrofit_generator: ^10.2.5
   flutter_gen_runner: ^5.14.0
   mockito: ^5.6.4
+  drift_dev: ^2.21.0
 
 flutter:
   uses-material-design: true
