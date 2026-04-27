@@ -9,7 +9,6 @@ part 'env_parser.dart';
 part 'env_variables.dart';
 
 Future<void> initEnv() async {
-  if (_parser.isInitialized) return;
   await _parser.load();
 }
 
