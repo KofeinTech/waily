@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
+import 'core/ui_kit/theme/app_theme.dart';
 import 'features/core/presentation/bloc/app_notification_cubit.dart';
 import 'features/core/presentation/widgets/app_notification_builder.dart';
 
@@ -20,6 +21,9 @@ class App extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'Waily',
+        debugShowCheckedModeBanner: false,
+        darkTheme: darkTheme,
+        themeMode: ThemeMode.dark,
         builder: (context, child) => AppNotificationBuilder(
           child: child ?? const SizedBox.shrink(),
         ),

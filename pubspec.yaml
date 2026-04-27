@@ -39,7 +39,23 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icons/
+    - assets/icons/common/
+    - assets/icons/chat/
+    - assets/icons/nav/
     - assets/images/
+  fonts:
+    - family: Helvetica Neue
+      fonts:
+        - asset: assets/fonts/helvetica_neue/HelveticaNeue-Thin.otf
+          weight: 100
+        - asset: assets/fonts/helvetica_neue/HelveticaNeue-Light.otf
+          weight: 300
+        - asset: assets/fonts/helvetica_neue/HelveticaNeue-Roman.otf
+          weight: 400
+        - asset: assets/fonts/helvetica_neue/HelveticaNeue-Medium.otf
+          weight: 500
+        - asset: assets/fonts/helvetica_neue/HelveticaNeue-Bold.otf
+          weight: 700
 
 flutter_gen:
   output: lib/core/gen/
