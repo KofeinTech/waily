@@ -11,20 +11,18 @@ import '../icons/waily_icon.dart';
 /// Receives the active branch index and a tap callback from the
 /// hosting `StatefulShellRoute`. Keeps zero state of its own.
 ///
-/// Geometry / fill come straight from the Figma `Nav Bar` frame
-/// (393x80, surface fill, MenuList padding 16/12).
+/// Geometry / fill come straight from the Figma `Menu List` frame
+/// inside `Nav Bar` (393x58, surface fill, padding 16/12/16/6). The
+/// extra 30pt the Figma `Nav Bar` adds below is the iOS home
+/// indicator zone, contributed at runtime by `SafeArea(top: false)`.
 class AppBottomNav extends StatelessWidget {
-  const AppBottomNav({
-    required this.currentIndex,
-    required this.onTap,
-    super.key,
-  });
+  const AppBottomNav({required this.currentIndex, required this.onTap, super.key});
 
   /// Index into [AppRoutes.shellBranchOrder].
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  static const double _height = 80;
+  static const double _height = 58;
 
   @override
   Widget build(BuildContext context) {
@@ -35,16 +33,14 @@ class AppBottomNav extends StatelessWidget {
         child: SizedBox(
           height: _height,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 for (var i = 0; i < AppRoutes.shellBranchOrder.length; i++)
                   _NavItem(
-                    key: ValueKey(
-                      'app-bottom-nav-item-${AppRoutes.shellBranchOrder[i]}',
-                    ),
+                    key: ValueKey('app-bottom-nav-item-${AppRoutes.shellBranchOrder[i]}'),
                     branch: AppRoutes.shellBranchOrder[i],
                     isActive: i == currentIndex,
                     onTap: () => onTap(i),
@@ -59,12 +55,7 @@ class AppBottomNav extends StatelessWidget {
 }
 
 class _NavItem extends StatefulWidget {
-  const _NavItem({
-    required this.branch,
-    required this.isActive,
-    required this.onTap,
-    super.key,
-  });
+  const _NavItem({required this.branch, required this.isActive, required this.onTap, super.key});
 
   final String branch;
   final bool isActive;
@@ -74,8 +65,7 @@ class _NavItem extends StatefulWidget {
   State<_NavItem> createState() => _NavItemState();
 }
 
-class _NavItemState extends State<_NavItem>
-    with SingleTickerProviderStateMixin {
+class _NavItemState extends State<_NavItem> with SingleTickerProviderStateMixin {
   static const Duration _duration = Duration(milliseconds: 350);
   static const Curve _curve = Curves.easeOutCubic;
 
@@ -91,11 +81,7 @@ class _NavItemState extends State<_NavItem>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: _duration,
-      value: widget.isActive ? 1.0 : 0.0,
-    );
+    _controller = AnimationController(vsync: this, duration: _duration, value: widget.isActive ? 1.0 : 0.0);
     _expand = CurvedAnimation(parent: _controller, curve: _curve);
   }
 
@@ -132,14 +118,9 @@ class _NavItemState extends State<_NavItem>
           duration: _duration,
           curve: _curve,
           height: s.height,
-          padding: EdgeInsets.symmetric(
-            horizontal: s.horizontalPadding,
-            vertical: s.verticalPadding,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: s.horizontalPadding, vertical: s.verticalPadding),
           decoration: BoxDecoration(
-            color: widget.isActive
-                ? s.activeBackgroundColor
-                : Colors.transparent,
+            color: widget.isActive ? s.activeBackgroundColor : Colors.transparent,
             borderRadius: BorderRadius.circular(s.borderRadius),
           ),
           child: Row(
@@ -149,20 +130,23 @@ class _NavItemState extends State<_NavItem>
               WailyIcon(
                 icon: _iconFor(widget.branch),
                 size: s.iconSize,
-                color: widget.isActive
-                    ? _activeIconColor
-                    : _inactiveIconColor,
+                color: widget.isActive ? _activeIconColor : _inactiveIconColor,
               ),
               ClipRect(
                 child: AnimatedBuilder(
                   animation: _expand,
                   builder: (context, child) {
-                    // Manual Align with centerLeft so the label stays on the
-                    // row's vertical centerline. SizeTransition would pin it
-                    // to top (it hardcodes Alignment(_, -1.0)).
+                    // heightFactor: 1.0 keeps the Align tight to the child's
+                    // intrinsic height. Without it Align expands to the row's
+                    // full 24px and the inner Alignment(_, 0) reproduces the
+                    // 4px optical offset reported earlier — with it, the
+                    // outer Row's crossAxis.center centers the label box
+                    // exactly the way the original WailyMenuItemContainer
+                    // does (no extra wrapper geometry to drift through).
                     return Align(
                       alignment: Alignment.centerLeft,
                       widthFactor: _expand.value,
+                      heightFactor: 1.0,
                       child: FadeTransition(opacity: _expand, child: child),
                     );
                   },
