@@ -17,6 +17,7 @@ import 'sections/segmented_buttons_section.dart';
 import 'sections/segmented_pickers_section.dart';
 import 'sections/switchers_section.dart';
 import 'sections/text_fields_section.dart';
+import 'sections/text_inputs_section.dart';
 
 class ShowcaseHome extends StatelessWidget {
   const ShowcaseHome({super.key});
@@ -48,6 +49,7 @@ class ShowcaseHome extends StatelessWidget {
           BigDropdownsSection(),
           OptionsSection(),
           DigitBoxesSection(),
+          TextInputsSection(),
         ],
       ),
     );
