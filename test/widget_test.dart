@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,13 +23,17 @@ ENABLE_LOGGING=false
     resetEnvForTesting();
   });
 
-  testWidgets('App boots and shows the demo home screen',
+  testWidgets('App boots into the Home tab via the always-on stub gate',
       (WidgetTester tester) async {
     await tester.pumpWidget(const App());
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(find.text('Waily — state mgmt demo'), findsOneWidget);
-    expect(find.text('Show notification (direct)'), findsOneWidget);
-    expect(find.text('Trigger error via use case'), findsOneWidget);
+    // The Home placeholder body and the active bottom-nav label both
+    // render the string 'Home', so a plain text find is ambiguous.
+    expect(find.text('Home'), findsNWidgets(2));
+    expect(
+      find.byKey(const ValueKey('app-bottom-nav-item-home')),
+      findsOneWidget,
+    );
   });
 }
