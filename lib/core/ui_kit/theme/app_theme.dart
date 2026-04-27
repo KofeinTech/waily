@@ -5,6 +5,7 @@ import '../extensions/app_button_style.dart';
 import '../extensions/app_input_style.dart';
 import '../extensions/app_card_style.dart';
 import '../extensions/app_icon_button_style.dart';
+import '../extensions/app_link_style.dart';
 import 'app_fonts.dart';
 
 /// The single [ThemeData] used throughout the app.
@@ -21,5 +22,6 @@ final ThemeData darkTheme = ThemeData(
     AppInputStyle.dark(),
     AppCardStyle.dark(),
     AppIconButtonStyle.dark(),
+    AppLinkStyle.dark(),
   ],
 );
