@@ -6,12 +6,19 @@ import '../theme/app_border_radius.dart';
 
 /// Input field style tokens for the dark Waily theme.
 ///
-/// Consumed by [WailyTextField] to build [InputDecoration] without Material defaults.
+/// Consumed by [WailyTextField] to build [InputDecoration] without Material
+/// defaults.
+///
+/// Variants follow the Figma `Input field` component-set:
+/// `Type` ∈ {Primary, Secondary} ×
+/// `State` ∈ {Default, Active, Filled, Disabled, Error}.
 @immutable
 class AppInputStyle extends ThemeExtension<AppInputStyle> {
   const AppInputStyle._({
     required this.fillColor,
+    required this.secondaryFillColor,
     required this.borderColor,
+    required this.secondaryBorderColor,
     required this.focusedBorderColor,
     required this.errorBorderColor,
     required this.borderRadius,
@@ -22,9 +29,22 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
     required this.errorStyle,
   });
 
+  /// Primary fill (Figma Input field / Type=Primary => `#FFFFFF`).
   final Color fillColor;
+
+  /// Secondary fill (Figma Input field / Type=Secondary => `#7F8799`).
+  final Color secondaryFillColor;
+
+  /// Primary default/idle border (transparent — only Active/Error use a stroke).
   final Color borderColor;
+
+  /// Secondary default/idle border.
+  final Color secondaryBorderColor;
+
+  /// Focused/Active stroke for both Primary and Secondary (Figma `#D4E1FF`).
   final Color focusedBorderColor;
+
+  /// Error stroke for both Primary and Secondary (Figma `#D52D2D`).
   final Color errorBorderColor;
   final double borderRadius;
   final EdgeInsets contentPadding;
@@ -34,25 +54,36 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
   final TextStyle errorStyle;
 
   factory AppInputStyle.dark() => AppInputStyle._(
-    fillColor: AppColors.surface,
-    borderColor: AppColors.border,
+    // Primary fill in Figma is white (#FFFFFF). The dark app pairs that with
+    // a subtle blue stroke when focused.
+    fillColor: AppColors.white,
+    // Secondary fill in Figma is #7F8799 (textTertiary).
+    secondaryFillColor: AppColors.textTertiary,
+    // Idle border is transparent in Figma `default` state.
+    borderColor: const Color(0x00000000),
+    secondaryBorderColor: const Color(0x00000000),
+    // Active stroke matches `primary` (#D4E1FF).
     focusedBorderColor: AppColors.primary,
     errorBorderColor: AppColors.error,
     borderRadius: AppBorderRadius.m,
+    // Figma padding (14h / 16v). 14 isn't a current AppSpacing token, but it
+    // matches AppBorderRadius.ml (14); inlined for clarity.
     contentPadding: const EdgeInsets.symmetric(
-      horizontal: AppSpacing.m,
+      horizontal: 14,
       vertical: AppSpacing.m,
     ),
-    labelStyle: AppTypography.s14w400(color: AppColors.textSecondary),
-    inputStyle: AppTypography.s16w400(color: AppColors.textPrimary),
-    hintStyle: AppTypography.s16w400(color: AppColors.textDisabled),
-    errorStyle: AppTypography.s12w500(color: AppColors.error),
+    labelStyle: AppTypography.s16w400(color: AppColors.textSecondary),
+    inputStyle: AppTypography.s16w400(color: AppColors.surfaceVariant),
+    hintStyle: AppTypography.s16w400(color: AppColors.primary),
+    errorStyle: AppTypography.s14w400(color: AppColors.error),
   );
 
   @override
   AppInputStyle copyWith({
     Color? fillColor,
+    Color? secondaryFillColor,
     Color? borderColor,
+    Color? secondaryBorderColor,
     Color? focusedBorderColor,
     Color? errorBorderColor,
     double? borderRadius,
@@ -63,7 +94,9 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
     TextStyle? errorStyle,
   }) => AppInputStyle._(
     fillColor: fillColor ?? this.fillColor,
+    secondaryFillColor: secondaryFillColor ?? this.secondaryFillColor,
     borderColor: borderColor ?? this.borderColor,
+    secondaryBorderColor: secondaryBorderColor ?? this.secondaryBorderColor,
     focusedBorderColor: focusedBorderColor ?? this.focusedBorderColor,
     errorBorderColor: errorBorderColor ?? this.errorBorderColor,
     borderRadius: borderRadius ?? this.borderRadius,
@@ -79,7 +112,13 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
     if (other is! AppInputStyle) return this;
     return AppInputStyle._(
       fillColor: Color.lerp(fillColor, other.fillColor, t) ?? fillColor,
+      secondaryFillColor:
+          Color.lerp(secondaryFillColor, other.secondaryFillColor, t) ??
+          secondaryFillColor,
       borderColor: Color.lerp(borderColor, other.borderColor, t) ?? borderColor,
+      secondaryBorderColor:
+          Color.lerp(secondaryBorderColor, other.secondaryBorderColor, t) ??
+          secondaryBorderColor,
       focusedBorderColor:
           Color.lerp(focusedBorderColor, other.focusedBorderColor, t) ??
           focusedBorderColor,

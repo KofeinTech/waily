@@ -5,42 +5,62 @@ import '../helpers/test_theme_wrapper.dart';
 
 void main() {
   group('WailyTextField', () {
-    testWidgets('renders a TextField', (tester) async {
-      await tester.pumpWidget(TestThemeWrapper(child: const WailyTextField()));
-      expect(find.byType(TextField), findsOneWidget);
-    });
-
-    testWidgets('displays hint text', (tester) async {
+    testWidgets('primary renders label and hint', (tester) async {
       await tester.pumpWidget(
-        TestThemeWrapper(child: const WailyTextField(hint: 'Enter your email')),
-      );
-      expect(find.text('Enter your email'), findsOneWidget);
-    });
-
-    testWidgets('displays error text when provided', (tester) async {
-      await tester.pumpWidget(
-        TestThemeWrapper(
-          child: const WailyTextField(errorText: 'Field is required'),
+        const TestThemeWrapper(
+          child: WailyTextField(label: 'Email', hint: 'you@example.com'),
         ),
       );
-      expect(find.text('Field is required'), findsOneWidget);
+      expect(find.text('Email'), findsOneWidget);
+      expect(find.text('you@example.com'), findsOneWidget);
     });
 
-    testWidgets('obscures text when obscureText is true', (tester) async {
+    testWidgets('shows errorText when provided', (tester) async {
       await tester.pumpWidget(
-        TestThemeWrapper(child: const WailyTextField(obscureText: true)),
+        const TestThemeWrapper(
+          child: WailyTextField(label: 'Email', errorText: 'Required'),
+        ),
+      );
+      expect(find.text('Required'), findsOneWidget);
+    });
+
+    testWidgets('forwards onChanged events', (tester) async {
+      String? value;
+      await tester.pumpWidget(
+        TestThemeWrapper(child: WailyTextField(onChanged: (v) => value = v)),
+      );
+      await tester.enterText(find.byType(TextField), 'hello');
+      expect(value, 'hello');
+    });
+
+    testWidgets('disabled blocks input (enabled=false)', (tester) async {
+      await tester.pumpWidget(
+        const TestThemeWrapper(child: WailyTextField(enabled: false)),
+      );
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.enabled, isFalse);
+    });
+
+    testWidgets('secondary variant renders without error', (tester) async {
+      await tester.pumpWidget(
+        const TestThemeWrapper(
+          child: WailyTextField(
+            label: 'Search',
+            hint: 'Type something',
+            variant: WailyTextFieldVariant.secondary,
+          ),
+        ),
+      );
+      expect(find.text('Search'), findsOneWidget);
+      expect(find.text('Type something'), findsOneWidget);
+    });
+
+    testWidgets('obscureText is forwarded', (tester) async {
+      await tester.pumpWidget(
+        const TestThemeWrapper(child: WailyTextField(obscureText: true)),
       );
       final field = tester.widget<TextField>(find.byType(TextField));
       expect(field.obscureText, isTrue);
-    });
-
-    testWidgets('calls onChanged when text is entered', (tester) async {
-      String? changed;
-      await tester.pumpWidget(
-        TestThemeWrapper(child: WailyTextField(onChanged: (v) => changed = v)),
-      );
-      await tester.enterText(find.byType(TextField), 'hello');
-      expect(changed, 'hello');
     });
   });
 }

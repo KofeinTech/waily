@@ -5,8 +5,12 @@ import 'package:waily/core/ui_kit/theme/app_border_radius.dart';
 
 void main() {
   group('AppInputStyle', () {
-    test('dark() fillColor is AppColors.surface', () {
-      expect(AppInputStyle.dark().fillColor, AppColors.surface);
+    test('dark() fillColor is AppColors.white (Primary fill in Figma)', () {
+      expect(AppInputStyle.dark().fillColor, AppColors.white);
+    });
+
+    test('dark() secondaryFillColor is AppColors.textTertiary (#7F8799)', () {
+      expect(AppInputStyle.dark().secondaryFillColor, AppColors.textTertiary);
     });
 
     test('dark() focusedBorderColor is AppColors.primary', () {
@@ -26,6 +30,15 @@ void main() {
       final modified = style.copyWith(fillColor: AppColors.surfaceVariant);
       expect(modified.fillColor, AppColors.surfaceVariant);
       expect(modified.borderRadius, style.borderRadius);
+    });
+
+    test('copyWith overrides secondaryFillColor', () {
+      final style = AppInputStyle.dark();
+      final modified = style.copyWith(
+        secondaryFillColor: AppColors.surfaceVariant,
+      );
+      expect(modified.secondaryFillColor, AppColors.surfaceVariant);
+      expect(modified.fillColor, style.fillColor);
     });
 
     test('dark() errorStyle uses AppColors.error color', () {

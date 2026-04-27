@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../extensions/theme_context_extension.dart';
 import '../theme/app_spacing.dart';
 import 'sections/buttons_section.dart';
+import 'sections/text_fields_section.dart';
 
 class ShowcaseHome extends StatelessWidget {
   const ShowcaseHome({super.key});
@@ -16,7 +17,7 @@ class ShowcaseHome extends StatelessWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.m),
-        children: const [ButtonsSection()],
+        children: const [ButtonsSection(), TextFieldsSection()],
       ),
     );
   }
