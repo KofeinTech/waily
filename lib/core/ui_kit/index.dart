@@ -31,6 +31,7 @@ export 'extensions/app_chat_input_field_style.dart';
 export 'extensions/app_message_field_style.dart';
 export 'extensions/app_menu_item_container_style.dart';
 export 'extensions/app_slide_button_style.dart';
+export 'extensions/app_history_card_style.dart';
 export 'extensions/theme_context_extension.dart';
 
 // Components
@@ -54,4 +55,5 @@ export 'components/indicators/waily_progress_bar.dart';
 export 'components/indicators/waily_loader.dart';
 export 'components/cards/waily_card.dart';
 export 'components/containers/waily_menu_item_container.dart';
+export 'components/containers/waily_history_card.dart';
 export 'components/icons/waily_icon.dart';

@@ -9,6 +9,7 @@ import 'sections/checkboxes_section.dart';
 import 'sections/chat_input_fields_section.dart';
 import 'sections/chips_section.dart';
 import 'sections/digit_boxes_section.dart';
+import 'sections/history_cards_section.dart';
 import 'sections/links_section.dart';
 import 'sections/loaders_section.dart';
 import 'sections/menu_items_section.dart';
@@ -58,6 +59,7 @@ class ShowcaseHome extends StatelessWidget {
           MessageFieldsSection(),
           MenuItemsSection(),
           SlideButtonsSection(),
+          HistoryCardsSection(),
         ],
       ),
     );
