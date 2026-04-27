@@ -1,23 +1,25 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waily/app.dart';
-import 'package:waily/core/env/env.dart';
+import 'package:waily/core/di/injection.dart';
 
 void main() {
   setUp(() {
-    resetEnvForTesting();
+    SharedPreferences.setMockInitialValues({});
+    configureDependencies();
   });
 
-  testWidgets('WailyApp builds without error', (WidgetTester tester) async {
-    dotenv.testLoad(fileInput: '''
-TYPE=DEV
-API_BASE_URL=https://example.com
-ENABLE_LOGGING=true
-''');
+  tearDown(() async {
+    await getIt.reset();
+  });
 
-    await tester.pumpWidget(const WailyApp());
-    expect(find.byType(MaterialApp), findsOneWidget);
-    expect(find.byType(Scaffold), findsOneWidget);
+  testWidgets('App boots and shows the demo home screen',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const App());
+    await tester.pump();
+
+    expect(find.text('Waily — state mgmt demo'), findsOneWidget);
+    expect(find.text('Show notification (direct)'), findsOneWidget);
+    expect(find.text('Trigger error via use case'), findsOneWidget);
   });
 }

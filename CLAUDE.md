@@ -176,6 +176,12 @@ class AuthCubit extends Cubit<AuthState> {
 }
 ```
 
+### Persistence
+
+- `LocalStorage` (SharedPreferences-backed) for non-sensitive prefs (theme, locale, onboarding flags).
+- `SecureStorage` (flutter_secure_storage) for tokens and secrets.
+- Never store tokens in `LocalStorage`. See `docs/state-management.md` for the full guide.
+
 ## Data Layer: Repository Implementation
 
 Implements the domain repository and utilizes the datasource and mappers.

@@ -58,3 +58,8 @@ fvm flutter analyze
 ## Architecture
 
 See `CLAUDE.md` for the full project conventions (clean architecture, Cubit state management, theming, asset generation).
+A new Flutter project.
+
+## State management
+
+State is managed with `flutter_bloc` (Cubit) and dependency injection via `injectable` + `get_it`. See [docs/state-management.md](docs/state-management.md) for patterns, persistence strategy, and examples.
