@@ -6,9 +6,9 @@ import '../helpers/test_theme_wrapper.dart';
 
 void main() {
   group('WailyIcon', () {
-    testWidgets('renders an SvgPicture', (tester) async {
+    testWidgets('renders an SvgPicture with a known icon', (tester) async {
       await tester.pumpWidget(
-        TestThemeWrapper(child: WailyIcon(icon: Assets.icons.placeholder)),
+        TestThemeWrapper(child: WailyIcon(icon: Assets.icons.common.arrow)),
       );
       await tester.pump();
       expect(find.byType(SvgPicture), findsOneWidget);
@@ -17,7 +17,7 @@ void main() {
     testWidgets('applies provided size to SvgPicture width', (tester) async {
       await tester.pumpWidget(
         TestThemeWrapper(
-          child: WailyIcon(icon: Assets.icons.placeholder, size: 48),
+          child: WailyIcon(icon: Assets.icons.common.arrow, size: 48),
         ),
       );
       await tester.pump();
@@ -28,7 +28,7 @@ void main() {
     testWidgets('applies provided size to SvgPicture height', (tester) async {
       await tester.pumpWidget(
         TestThemeWrapper(
-          child: WailyIcon(icon: Assets.icons.placeholder, size: 32),
+          child: WailyIcon(icon: Assets.icons.common.close, size: 32),
         ),
       );
       await tester.pump();
