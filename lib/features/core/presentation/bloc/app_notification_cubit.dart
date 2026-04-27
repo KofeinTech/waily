@@ -12,7 +12,12 @@ class AppNotificationCubit extends Cubit<AppNotificationState> {
   AppNotificationCubit(this._manager)
       : super(const AppNotificationState.initial()) {
     _subscription = _manager.notificationStream.listen(
-      (notification) => emit(AppNotificationState.received(notification)),
+      (notification) => emit(
+        AppNotificationState.received(
+          notification,
+          emittedAt: DateTime.now(),
+        ),
+      ),
     );
   }
 
