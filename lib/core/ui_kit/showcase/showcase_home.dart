@@ -3,6 +3,7 @@ import '../extensions/theme_context_extension.dart';
 import '../theme/app_spacing.dart';
 import 'sections/buttons_section.dart';
 import 'sections/cards_section.dart';
+import 'sections/icon_buttons_section.dart';
 import 'sections/icons_section.dart';
 import 'sections/text_fields_section.dart';
 
@@ -24,6 +25,7 @@ class ShowcaseHome extends StatelessWidget {
           TextFieldsSection(),
           CardsSection(),
           IconsSection(),
+          IconButtonsSection(),
         ],
       ),
     );

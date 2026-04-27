@@ -14,10 +14,12 @@ export 'extensions/app_text_styles.dart';
 export 'extensions/app_button_style.dart';
 export 'extensions/app_input_style.dart';
 export 'extensions/app_card_style.dart';
+export 'extensions/app_icon_button_style.dart';
 export 'extensions/theme_context_extension.dart';
 
 // Components
 export 'components/buttons/waily_button.dart';
+export 'components/buttons/waily_icon_button.dart';
 export 'components/inputs/waily_text_field.dart';
 export 'components/cards/waily_card.dart';
 export 'components/icons/waily_icon.dart';
