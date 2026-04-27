@@ -6,6 +6,7 @@ import 'app_input_style.dart';
 import 'app_card_style.dart';
 import 'app_icon_button_style.dart';
 import 'app_link_style.dart';
+import 'app_checkbox_style.dart';
 
 /// BuildContext shortcuts for all UI kit ThemeExtensions.
 ///
@@ -25,4 +26,6 @@ extension ThemeContextExtension on BuildContext {
   AppIconButtonStyle get appIconButtonStyle =>
       Theme.of(this).extension<AppIconButtonStyle>()!;
   AppLinkStyle get appLinkStyle => Theme.of(this).extension<AppLinkStyle>()!;
+  AppCheckboxStyle get appCheckboxStyle =>
+      Theme.of(this).extension<AppCheckboxStyle>()!;
 }
