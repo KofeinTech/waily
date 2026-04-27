@@ -20,7 +20,6 @@ build/
 # Secrets & credentials
 .env
 .env.*
-!.env.example
 *.key
 *.pem
 *.p12
