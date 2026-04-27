@@ -5,63 +5,98 @@ import '../helpers/test_theme_wrapper.dart';
 
 void main() {
   group('WailyButton', () {
-    testWidgets('primary variant renders ElevatedButton with label', (
+    testWidgets('primary renders label and fires onPressed on tap', (
       tester,
     ) async {
+      var taps = 0;
       await tester.pumpWidget(
         TestThemeWrapper(
-          child: WailyButton(label: 'Continue', onPressed: () {}),
+          child: WailyButton.primary(
+            label: 'Continue',
+            onPressed: () => taps++,
+          ),
         ),
       );
-      expect(find.byType(ElevatedButton), findsOneWidget);
       expect(find.text('Continue'), findsOneWidget);
+      await tester.tap(find.byType(WailyButton));
+      await tester.pump();
+      expect(taps, 1);
     });
 
-    testWidgets('secondary variant renders ElevatedButton', (tester) async {
+    testWidgets('secondary renders label and fires onPressed on tap', (
+      tester,
+    ) async {
+      var taps = 0;
       await tester.pumpWidget(
         TestThemeWrapper(
-          child: WailyButton(
-            label: 'Skip',
-            onPressed: () {},
-            variant: WailyButtonVariant.secondary,
+          child: WailyButton.secondary(label: 'Skip', onPressed: () => taps++),
+        ),
+      );
+      expect(find.text('Skip'), findsOneWidget);
+      await tester.tap(find.byType(WailyButton));
+      await tester.pump();
+      expect(taps, 1);
+    });
+
+    testWidgets('disabled blocks tap', (tester) async {
+      var taps = 0;
+      await tester.pumpWidget(
+        TestThemeWrapper(
+          child: WailyButton.primary(
+            label: 'Disabled',
+            onPressed: () => taps++,
+            isDisabled: true,
           ),
         ),
       );
-      expect(find.byType(ElevatedButton), findsOneWidget);
+      await tester.tap(find.byType(WailyButton));
+      await tester.pump();
+      expect(taps, 0);
     });
 
-    testWidgets('outlined variant renders OutlinedButton', (tester) async {
+    testWidgets('loading shows CircularProgressIndicator and blocks tap', (
+      tester,
+    ) async {
+      var taps = 0;
       await tester.pumpWidget(
         TestThemeWrapper(
-          child: WailyButton(
-            label: 'Cancel',
-            onPressed: () {},
-            variant: WailyButtonVariant.outlined,
+          child: WailyButton.primary(
+            label: 'Loading',
+            onPressed: () => taps++,
+            isLoading: true,
           ),
         ),
       );
-      expect(find.byType(OutlinedButton), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      // Label hidden while loading.
+      expect(find.text('Loading'), findsNothing);
+      await tester.tap(find.byType(WailyButton));
+      await tester.pump();
+      expect(taps, 0);
     });
 
-    testWidgets('disabled when onPressed is null', (tester) async {
+    testWidgets('big size yields height >= 64', (tester) async {
       await tester.pumpWidget(
         TestThemeWrapper(
-          child: const WailyButton(label: 'Disabled', onPressed: null),
+          child: WailyButton.primary(
+            label: 'Big',
+            onPressed: () {},
+            size: WailyButtonSize.big,
+          ),
         ),
       );
-      final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
-      expect(button.onPressed, isNull);
+      final size = tester.getSize(find.byType(WailyButton));
+      expect(size.height, greaterThanOrEqualTo(64));
     });
 
-    testWidgets('tap calls onPressed callback', (tester) async {
-      var tapped = false;
+    testWidgets('default size yields height ~52', (tester) async {
       await tester.pumpWidget(
         TestThemeWrapper(
-          child: WailyButton(label: 'Tap me', onPressed: () => tapped = true),
+          child: WailyButton.primary(label: 'Default', onPressed: () {}),
         ),
       );
-      await tester.tap(find.byType(ElevatedButton));
-      expect(tapped, isTrue);
+      final size = tester.getSize(find.byType(WailyButton));
+      expect(size.height, 52);
     });
   });
 }
