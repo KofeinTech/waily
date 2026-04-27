@@ -12,8 +12,22 @@ void main() {
       expect(AppButtonStyle.dark().primaryBackground, AppColors.primary);
     });
 
+    test(
+      'dark() primaryPressedBackground is AppColors.primaryLowest (#E5EDFF)',
+      () {
+        expect(
+          AppButtonStyle.dark().primaryPressedBackground,
+          AppColors.primaryLowest,
+        );
+      },
+    );
+
     test('dark() secondaryBackground is AppColors.white', () {
       expect(AppButtonStyle.dark().secondaryBackground, AppColors.white);
+    });
+
+    test('dark() secondaryPressedBackground is AppColors.white', () {
+      expect(AppButtonStyle.dark().secondaryPressedBackground, AppColors.white);
     });
 
     test('dark() disabledBackground is AppColors.textSecondary (#9EA3AE)', () {
@@ -24,8 +38,8 @@ void main() {
       expect(AppButtonStyle.dark().borderRadiusDefault, AppBorderRadius.m);
     });
 
-    test('dark() borderRadiusBig is AppBorderRadius.l (16)', () {
-      expect(AppButtonStyle.dark().borderRadiusBig, AppBorderRadius.l);
+    test('dark() borderRadiusSmall is AppBorderRadius.s (8)', () {
+      expect(AppButtonStyle.dark().borderRadiusSmall, AppBorderRadius.s);
     });
 
     test('dark() paddingDefault matches Figma (h:20, v:16)', () {
@@ -38,12 +52,12 @@ void main() {
       );
     });
 
-    test('dark() paddingBig is (h:24, v:20)', () {
+    test('dark() paddingSmall matches Figma (h:16, v:12)', () {
       expect(
-        AppButtonStyle.dark().paddingBig,
+        AppButtonStyle.dark().paddingSmall,
         const EdgeInsets.symmetric(
-          vertical: AppSpacing.ml,
-          horizontal: AppSpacing.l,
+          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.m,
         ),
       );
     });
@@ -52,8 +66,8 @@ void main() {
       expect(AppButtonStyle.dark().heightDefault, 52);
     });
 
-    test('dark() heightBig is 64', () {
-      expect(AppButtonStyle.dark().heightBig, 64);
+    test('dark() heightSmall is 42', () {
+      expect(AppButtonStyle.dark().heightSmall, 42);
     });
 
     test('copyWith overrides primaryBackground', () {
@@ -63,10 +77,19 @@ void main() {
       expect(modified.primaryForeground, style.primaryForeground);
     });
 
-    test('copyWith overrides heightBig', () {
+    test('copyWith overrides primaryPressedBackground', () {
       final style = AppButtonStyle.dark();
-      final modified = style.copyWith(heightBig: 72);
-      expect(modified.heightBig, 72);
+      final modified = style.copyWith(
+        primaryPressedBackground: AppColors.error,
+      );
+      expect(modified.primaryPressedBackground, AppColors.error);
+      expect(modified.primaryBackground, style.primaryBackground);
+    });
+
+    test('copyWith overrides heightSmall', () {
+      final style = AppButtonStyle.dark();
+      final modified = style.copyWith(heightSmall: 36);
+      expect(modified.heightSmall, 36);
       expect(modified.heightDefault, style.heightDefault);
     });
   });

@@ -7,7 +7,7 @@ enum WailyButtonType { primary, secondary }
 
 /// Button physical size. Maps to the `Size` axis of the Figma `Button`
 /// component-set.
-enum WailyButtonSize { defaultSize, big }
+enum WailyButtonSize { defaultSize, small }
 
 /// App-wide button widget.
 ///
@@ -18,7 +18,7 @@ enum WailyButtonSize { defaultSize, big }
 /// Use the named factories rather than the private constructor:
 /// ```dart
 /// WailyButton.primary(label: 'Continue', onPressed: _onContinue)
-/// WailyButton.secondary(label: 'Skip', onPressed: _onSkip, size: WailyButtonSize.big)
+/// WailyButton.secondary(label: 'Skip', onPressed: _onSkip, size: WailyButtonSize.small)
 /// WailyButton.primary(label: 'Saving…', onPressed: _save, isLoading: true)
 /// ```
 class WailyButton extends StatelessWidget {
@@ -87,24 +87,27 @@ class WailyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.appButtonStyle;
 
-    final isBig = size == WailyButtonSize.big;
-    final radius = isBig ? s.borderRadiusBig : s.borderRadiusDefault;
-    final padding = isBig ? s.paddingBig : s.paddingDefault;
-    final height = isBig ? s.heightBig : s.heightDefault;
-    final textStyle = isBig ? s.textStyleBig : s.textStyleDefault;
+    final isSmall = size == WailyButtonSize.small;
+    final radius = isSmall ? s.borderRadiusSmall : s.borderRadiusDefault;
+    final padding = isSmall ? s.paddingSmall : s.paddingDefault;
+    final height = isSmall ? s.heightSmall : s.heightDefault;
+    final textStyle = isSmall ? s.textStyleSmall : s.textStyleDefault;
 
     final Color background = isDisabled
         ? s.disabledBackground
         : type == WailyButtonType.primary
         ? s.primaryBackground
         : s.secondaryBackground;
+    final Color pressedBackground = isDisabled
+        ? s.disabledBackground
+        : type == WailyButtonType.primary
+        ? s.primaryPressedBackground
+        : s.secondaryPressedBackground;
     final Color foreground = isDisabled
         ? s.disabledForeground
         : type == WailyButtonType.primary
         ? s.primaryForeground
         : s.secondaryForeground;
-
-    final borderRadius = BorderRadius.circular(radius);
 
     final Widget child = isLoading
         ? SizedBox(
@@ -117,29 +120,90 @@ class WailyButton extends StatelessWidget {
           )
         : Text(label, style: textStyle.copyWith(color: foreground));
 
-    final core = SizedBox(
+    return _WailyButtonSurface(
+      background: background,
+      pressedBackground: pressedBackground,
+      borderRadius: BorderRadius.circular(radius),
+      padding: padding,
       height: height,
-      width: expanded ? double.infinity : null,
+      expanded: expanded,
+      onTap: _interactive ? onPressed : null,
+      child: child,
+    );
+  }
+}
+
+class _WailyButtonSurface extends StatefulWidget {
+  const _WailyButtonSurface({
+    required this.background,
+    required this.pressedBackground,
+    required this.borderRadius,
+    required this.padding,
+    required this.height,
+    required this.expanded,
+    required this.onTap,
+    required this.child,
+  });
+
+  final Color background;
+  final Color pressedBackground;
+  final BorderRadius borderRadius;
+  final EdgeInsets padding;
+  final double height;
+  final bool expanded;
+  final VoidCallback? onTap;
+  final Widget child;
+
+  @override
+  State<_WailyButtonSurface> createState() => _WailyButtonSurfaceState();
+}
+
+class _WailyButtonSurfaceState extends State<_WailyButtonSurface> {
+  final Set<WidgetState> _states = <WidgetState>{};
+
+  void _setPressed(bool pressed) {
+    final has = _states.contains(WidgetState.pressed);
+    if (has == pressed) return;
+    setState(() {
+      if (pressed) {
+        _states.add(WidgetState.pressed);
+      } else {
+        _states.remove(WidgetState.pressed);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = WidgetStateProperty.resolveWith<Color>((states) {
+      if (states.contains(WidgetState.pressed)) return widget.pressedBackground;
+      return widget.background;
+    }).resolve(_states);
+
+    return SizedBox(
+      height: widget.height,
+      width: widget.expanded ? double.infinity : null,
       child: Material(
-        color: background,
-        borderRadius: borderRadius,
+        color: color,
+        borderRadius: widget.borderRadius,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: _interactive ? onPressed : null,
-          borderRadius: borderRadius,
+          onTap: widget.onTap,
+          onHighlightChanged: widget.onTap == null ? null : _setPressed,
+          borderRadius: widget.borderRadius,
           child: Padding(
-            padding: padding,
+            padding: widget.padding,
             child: Row(
-              mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisSize: widget.expanded
+                  ? MainAxisSize.max
+                  : MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [child],
+              children: [widget.child],
             ),
           ),
         ),
       ),
     );
-
-    return core;
   }
 }

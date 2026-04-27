@@ -32,28 +32,28 @@ class ButtonsSection extends StatelessWidget {
           ),
         ),
         (
-          label: 'Primary / Big',
+          label: 'Primary / Small',
           child: WailyButton.primary(
             label: 'Continue',
             onPressed: () {},
-            size: WailyButtonSize.big,
+            size: WailyButtonSize.small,
           ),
         ),
         (
-          label: 'Primary / Big / Disabled',
+          label: 'Primary / Small / Disabled',
           child: WailyButton.primary(
             label: 'Continue',
             onPressed: () {},
-            size: WailyButtonSize.big,
+            size: WailyButtonSize.small,
             isDisabled: true,
           ),
         ),
         (
-          label: 'Primary / Big / Loading',
+          label: 'Primary / Small / Loading',
           child: WailyButton.primary(
             label: 'Continue',
             onPressed: () {},
-            size: WailyButtonSize.big,
+            size: WailyButtonSize.small,
             isLoading: true,
           ),
         ),
@@ -78,28 +78,28 @@ class ButtonsSection extends StatelessWidget {
           ),
         ),
         (
-          label: 'Secondary / Big',
+          label: 'Secondary / Small',
           child: WailyButton.secondary(
             label: 'Skip',
             onPressed: () {},
-            size: WailyButtonSize.big,
+            size: WailyButtonSize.small,
           ),
         ),
         (
-          label: 'Secondary / Big / Disabled',
+          label: 'Secondary / Small / Disabled',
           child: WailyButton.secondary(
             label: 'Skip',
             onPressed: () {},
-            size: WailyButtonSize.big,
+            size: WailyButtonSize.small,
             isDisabled: true,
           ),
         ),
         (
-          label: 'Secondary / Big / Loading',
+          label: 'Secondary / Small / Loading',
           child: WailyButton.secondary(
             label: 'Skip',
             onPressed: () {},
-            size: WailyButtonSize.big,
+            size: WailyButtonSize.small,
             isLoading: true,
           ),
         ),

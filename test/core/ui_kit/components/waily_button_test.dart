@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:waily/core/ui_kit/components/buttons/waily_button.dart';
+import 'package:waily/core/ui_kit/extensions/app_button_style.dart';
 import '../helpers/test_theme_wrapper.dart';
 
 void main() {
@@ -75,18 +76,21 @@ void main() {
       expect(taps, 0);
     });
 
-    testWidgets('big size yields height >= 64', (tester) async {
+    testWidgets('small size yields height ~42 (shorter than default)', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         TestThemeWrapper(
           child: WailyButton.primary(
-            label: 'Big',
+            label: 'Small',
             onPressed: () {},
-            size: WailyButtonSize.big,
+            size: WailyButtonSize.small,
           ),
         ),
       );
       final size = tester.getSize(find.byType(WailyButton));
-      expect(size.height, greaterThanOrEqualTo(64));
+      expect(size.height, greaterThanOrEqualTo(42));
+      expect(size.height, lessThan(52));
     });
 
     testWidgets('default size yields height ~52', (tester) async {
@@ -98,5 +102,43 @@ void main() {
       final size = tester.getSize(find.byType(WailyButton));
       expect(size.height, 52);
     });
+
+    testWidgets(
+      'primary swaps to pressed background on press-down via WidgetState',
+      (tester) async {
+        await tester.pumpWidget(
+          TestThemeWrapper(
+            child: WailyButton.primary(label: 'Press', onPressed: () {}),
+          ),
+        );
+
+        Color materialColor() {
+          final material = tester.widget<Material>(
+            find.descendant(
+              of: find.byType(WailyButton),
+              matching: find.byType(Material),
+            ),
+          );
+          return material.color!;
+        }
+
+        // Resolve the expected pressed token from the theme — keep the
+        // assertion source-of-truth aligned with AppButtonStyle.dark().
+        final BuildContext context = tester.element(find.byType(WailyButton));
+        final style = Theme.of(context).extension<AppButtonStyle>()!;
+
+        expect(materialColor(), style.primaryBackground);
+
+        final gesture = await tester.startGesture(
+          tester.getCenter(find.byType(WailyButton)),
+        );
+        await tester.pump(const Duration(milliseconds: 50));
+
+        expect(materialColor(), style.primaryPressedBackground);
+
+        await gesture.up();
+        await tester.pumpAndSettle();
+      },
+    );
   });
 }
