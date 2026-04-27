@@ -108,10 +108,12 @@ void main() {
 }
 
 double _labelTransitionWidth(WidgetTester tester, String branch) {
-  final transition = find.descendant(
+  // The label expand wrapper is a ClipRect with an Align(widthFactor) child.
+  // The ClipRect's outer render box reflects the current animated width.
+  final clip = find.descendant(
     of: find.byKey(ValueKey('app-bottom-nav-item-$branch')),
-    matching: find.byType(SizeTransition),
+    matching: find.byType(ClipRect),
   );
-  expect(transition, findsOneWidget);
-  return tester.getSize(transition).width;
+  expect(clip, findsAtLeast(1));
+  return tester.getSize(clip.first).width;
 }

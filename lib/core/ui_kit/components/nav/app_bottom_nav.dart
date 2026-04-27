@@ -41,15 +41,13 @@ class AppBottomNav extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 for (var i = 0; i < AppRoutes.shellBranchOrder.length; i++)
-                  Expanded(
-                    child: _NavItem(
-                      key: ValueKey(
-                        'app-bottom-nav-item-${AppRoutes.shellBranchOrder[i]}',
-                      ),
-                      branch: AppRoutes.shellBranchOrder[i],
-                      isActive: i == currentIndex,
-                      onTap: () => onTap(i),
+                  _NavItem(
+                    key: ValueKey(
+                      'app-bottom-nav-item-${AppRoutes.shellBranchOrder[i]}',
                     ),
+                    branch: AppRoutes.shellBranchOrder[i],
+                    isActive: i == currentIndex,
+                    onTap: () => onTap(i),
                   ),
               ],
             ),
@@ -124,67 +122,66 @@ class _NavItemState extends State<_NavItem>
     final s = context.appMenuItemContainerStyle;
     final t = context.appTextStyles;
 
-    return Center(
-      child: Material(
-        color: Colors.transparent,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(s.borderRadius),
+      child: InkWell(
         borderRadius: BorderRadius.circular(s.borderRadius),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(s.borderRadius),
-          onTap: widget.onTap,
-          child: AnimatedContainer(
-            duration: _duration,
-            curve: _curve,
-            padding: EdgeInsets.symmetric(
-              horizontal: s.horizontalPadding,
-              vertical: s.verticalPadding,
-            ),
-            decoration: BoxDecoration(
-              color: widget.isActive
-                  ? s.activeBackgroundColor
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(s.borderRadius),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                WailyIcon(
-                  icon: _iconFor(widget.branch),
-                  size: s.iconSize,
-                  color: widget.isActive
-                      ? _activeIconColor
-                      : _inactiveIconColor,
-                ),
-                ClipRect(
-                  child: SizeTransition(
-                    axis: Axis.horizontal,
-                    sizeFactor: _expand,
-                    child: FadeTransition(
-                      opacity: _expand,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(width: s.itemSpacing),
-                          Text(
-                            AppRoutes.tabLabels[widget.branch]!,
-                            style: t.s12w500(color: _activeIconColor),
-                            maxLines: 1,
-                            softWrap: false,
-                            textHeightBehavior: const TextHeightBehavior(
-                              applyHeightToFirstAscent: false,
-                              applyHeightToLastDescent: false,
-                              leadingDistribution:
-                                  TextLeadingDistribution.even,
-                            ),
-                          ),
-                        ],
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: _duration,
+          curve: _curve,
+          height: s.height,
+          padding: EdgeInsets.symmetric(
+            horizontal: s.horizontalPadding,
+            vertical: s.verticalPadding,
+          ),
+          decoration: BoxDecoration(
+            color: widget.isActive
+                ? s.activeBackgroundColor
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(s.borderRadius),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              WailyIcon(
+                icon: _iconFor(widget.branch),
+                size: s.iconSize,
+                color: widget.isActive
+                    ? _activeIconColor
+                    : _inactiveIconColor,
+              ),
+              ClipRect(
+                child: AnimatedBuilder(
+                  animation: _expand,
+                  builder: (context, child) {
+                    // Manual Align with centerLeft so the label stays on the
+                    // row's vertical centerline. SizeTransition would pin it
+                    // to top (it hardcodes Alignment(_, -1.0)).
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: _expand.value,
+                      child: FadeTransition(opacity: _expand, child: child),
+                    );
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(width: s.itemSpacing),
+                      Text(
+                        AppRoutes.tabLabels[widget.branch]!,
+                        style: t.s12w500(color: _activeIconColor),
+                        maxLines: 1,
+                        softWrap: false,
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
