@@ -14,6 +14,7 @@
 - All shell commands assume CWD = repo root.
 - All Flutter commands use `fvm flutter ...`.
 - After every code change to a `freezed` / `injectable` / `mockito` annotated file: `fvm flutter pub run build_runner build --force-jit --delete-conflicting-outputs`. Note: `--force-jit` is REQUIRED — without it `build_runner` 2.14.1 fails in AOT mode because the transitive `objective_c` 9.3.0 dep declares native build hooks that `dart compile exe` rejects. The flag goes AFTER `build_runner build`, not before.
+- Generated files convention: `*.freezed.dart`, `*.g.dart`, `*.mocks.dart` are gitignored — DO NOT `git add` them explicitly. `injection.config.dart` is NOT gitignored — DO commit it. When staging by directory (`git add lib/foo/`), git respects `.gitignore` automatically, so only non-ignored files get staged. CI/local devs regenerate the others via `build_runner`.
 - After every file edit, run `dart format <file>` (the repo hook does this automatically — confirm with `git diff --check`).
 - `flutter analyze` must exit 0 before each commit.
 - Do not commit generated `.g.dart` / `.freezed.dart` / `.config.dart` / `.mocks.dart` files only — commit them with the source file that produced them.
@@ -257,7 +258,6 @@ Expected: 3 tests pass.
 
 ```bash
 git add lib/features/core/domain/entities/app_notification.dart \
-        lib/features/core/domain/entities/app_notification.freezed.dart \
         test/features/core/domain/entities/app_notification_test.dart
 git commit -m "feat(wail-12): add AppNotification freezed entity"
 ```
@@ -587,7 +587,6 @@ Expected: 4 tests pass.
 ```bash
 git add lib/features/core/data/gateway/ \
         test/features/core/mocks.dart \
-        test/features/core/mocks.mocks.dart \
         test/features/core/data/gateway/
 git commit -m "feat(wail-12): add AppGateway base with safeCall/voidSafeCall and Talker logging"
 ```
