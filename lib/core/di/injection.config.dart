@@ -44,8 +44,9 @@ extension GetItInjectableX on _i174.GetIt {
       dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i891.LocalStorage>(() => _i284.LocalStorageImpl());
-    gh.factory<_i169.AppNotificationCubit>(
+    gh.lazySingleton<_i169.AppNotificationCubit>(
       () => _i169.AppNotificationCubit(gh<_i349.NotificationManager>()),
+      dispose: (i) => i.close(),
     );
     gh.lazySingleton<_i374.TriggerDemoErrorUseCase>(
       () => _i374.TriggerDemoErrorUseCase(

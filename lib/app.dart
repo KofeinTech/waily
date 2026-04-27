@@ -13,8 +13,8 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AppNotificationCubit>(
-          create: (_) => getIt<AppNotificationCubit>(),
+        BlocProvider<AppNotificationCubit>.value(
+          value: getIt<AppNotificationCubit>(),
         ),
         // Future app-scope cubits go here.
       ],

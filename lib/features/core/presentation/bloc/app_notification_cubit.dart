@@ -7,7 +7,7 @@ import '../../domain/entities/app_notification.dart';
 import '../../domain/managers/notification_manager.dart';
 import 'app_notification_state.dart';
 
-@injectable
+@lazySingleton
 class AppNotificationCubit extends Cubit<AppNotificationState> {
   AppNotificationCubit(this._manager)
       : super(const AppNotificationState.initial()) {
@@ -20,6 +20,7 @@ class AppNotificationCubit extends Cubit<AppNotificationState> {
   late final StreamSubscription<AppNotification> _subscription;
 
   @override
+  @disposeMethod
   Future<void> close() async {
     await _subscription.cancel();
     return super.close();
