@@ -78,7 +78,7 @@ class _NavItem extends StatefulWidget {
 
 class _NavItemState extends State<_NavItem>
     with SingleTickerProviderStateMixin {
-  static const Duration _duration = Duration(milliseconds: 300);
+  static const Duration _duration = Duration(milliseconds: 350);
   static const Curve _curve = Curves.easeOutCubic;
 
   /// Content / Secondary / Disabled — white at 30% alpha.
@@ -88,7 +88,7 @@ class _NavItemState extends State<_NavItem>
   static const Color _activeIconColor = Color(0xFFFFFFFF);
 
   late final AnimationController _controller;
-  late final Animation<double> _t;
+  late final Animation<double> _expand;
 
   @override
   void initState() {
@@ -98,7 +98,7 @@ class _NavItemState extends State<_NavItem>
       duration: _duration,
       value: widget.isActive ? 1.0 : 0.0,
     );
-    _t = CurvedAnimation(parent: _controller, curve: _curve);
+    _expand = CurvedAnimation(parent: _controller, curve: _curve);
   }
 
   @override
@@ -124,64 +124,58 @@ class _NavItemState extends State<_NavItem>
     final s = context.appMenuItemContainerStyle;
     final t = context.appTextStyles;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: widget.onTap,
-      child: Center(
-        child: AnimatedBuilder(
-          animation: _t,
-          builder: (context, _) {
-            final value = _t.value;
-            final iconColor =
-                Color.lerp(_inactiveIconColor, _activeIconColor, value) ??
-                _inactiveIconColor;
-            final pillColor =
-                Color.lerp(
-                  Colors.transparent,
-                  s.activeBackgroundColor,
-                  value,
-                ) ??
-                Colors.transparent;
-            return Container(
-              height: s.height,
-              padding: EdgeInsets.symmetric(
-                horizontal: s.horizontalPadding,
-                vertical: s.verticalPadding,
-              ),
-              decoration: BoxDecoration(
-                color: pillColor,
-                borderRadius: BorderRadius.circular(s.borderRadius),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  WailyIcon(
-                    icon: _iconFor(widget.branch),
-                    size: s.iconSize,
-                    color: iconColor,
-                  ),
-                  if (value > 0)
-                    ClipRect(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: value,
-                        child: Opacity(
-                          opacity: value,
-                          child: Padding(
-                            padding: EdgeInsets.only(left: s.itemSpacing),
-                            child: Text(
-                              AppRoutes.tabLabels[widget.branch]!,
-                              style: t.s12w500(color: _activeIconColor),
-                            ),
-                          ),
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(s.borderRadius),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(s.borderRadius),
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: _duration,
+            curve: _curve,
+            padding: EdgeInsets.symmetric(
+              horizontal: s.horizontalPadding,
+              vertical: s.verticalPadding,
+            ),
+            decoration: BoxDecoration(
+              color: widget.isActive
+                  ? s.activeBackgroundColor
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(s.borderRadius),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                WailyIcon(
+                  icon: _iconFor(widget.branch),
+                  size: s.iconSize,
+                  color: widget.isActive
+                      ? _activeIconColor
+                      : _inactiveIconColor,
+                ),
+                ClipRect(
+                  child: SizeTransition(
+                    axis: Axis.horizontal,
+                    sizeFactor: _expand,
+                    child: FadeTransition(
+                      opacity: _expand,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: s.itemSpacing),
+                        child: Text(
+                          AppRoutes.tabLabels[widget.branch]!,
+                          style: t.s12w500(color: _activeIconColor),
+                          maxLines: 1,
+                          softWrap: false,
                         ),
                       ),
                     ),
-                ],
-              ),
-            );
-          },
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
