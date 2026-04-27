@@ -86,7 +86,7 @@ class _WailyIconButtonState extends State<WailyIconButton> {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: _enabled ? widget.onPressed : null,
-          onHighlightChanged: _enabled ? _setPressed : null,
+          onHighlightChanged: _setPressed,
           borderRadius: radius,
           child: Center(
             child: WailyIcon(
