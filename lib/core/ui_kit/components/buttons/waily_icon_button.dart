@@ -20,7 +20,7 @@ enum WailyIconButtonSize { defaultSize, big }
 ///   onPressed: _onClose,
 /// )
 /// ```
-class WailyIconButton extends StatelessWidget {
+class WailyIconButton extends StatefulWidget {
   const WailyIconButton({
     super.key,
     required this.icon,
@@ -44,18 +44,38 @@ class WailyIconButton extends StatelessWidget {
   /// switches the icon to [AppIconButtonStyle.iconColorDisabled].
   final bool isDisabled;
 
-  bool get _enabled => !isDisabled && onPressed != null;
+  @override
+  State<WailyIconButton> createState() => _WailyIconButtonState();
+}
+
+class _WailyIconButtonState extends State<WailyIconButton> {
+  bool _pressed = false;
+
+  bool get _enabled => !widget.isDisabled && widget.onPressed != null;
+
+  void _setPressed(bool pressed) {
+    if (!mounted) return;
+    if (_pressed == pressed) return;
+    setState(() => _pressed = pressed);
+  }
 
   @override
   Widget build(BuildContext context) {
     final s = context.appIconButtonStyle;
 
-    final isBig = size == WailyIconButtonSize.big;
+    final isBig = widget.size == WailyIconButtonSize.big;
     final containerSize = isBig ? s.sizeBig : s.sizeDefault;
     final iconSize = isBig ? s.iconSizeBig : s.iconSizeDefault;
     final radius = BorderRadius.circular(s.borderRadius);
 
-    final iconColor = isDisabled ? s.iconColorDisabled : s.iconColorDefault;
+    final Color iconColor;
+    if (widget.isDisabled) {
+      iconColor = s.iconColorDisabled;
+    } else if (_pressed) {
+      iconColor = s.iconColorPressed;
+    } else {
+      iconColor = s.iconColorDefault;
+    }
 
     return SizedBox(
       width: containerSize,
@@ -65,10 +85,15 @@ class WailyIconButton extends StatelessWidget {
         borderRadius: radius,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: _enabled ? onPressed : null,
+          onTap: _enabled ? widget.onPressed : null,
+          onHighlightChanged: _enabled ? _setPressed : null,
           borderRadius: radius,
           child: Center(
-            child: WailyIcon(icon: icon, size: iconSize, color: iconColor),
+            child: WailyIcon(
+              icon: widget.icon,
+              size: iconSize,
+              color: iconColor,
+            ),
           ),
         ),
       ),

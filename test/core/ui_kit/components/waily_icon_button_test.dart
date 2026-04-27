@@ -145,5 +145,30 @@ void main() {
       final icon = tester.widget<WailyIcon>(find.byType(WailyIcon));
       expect(icon.color, style.iconColorDefault);
     });
+
+    testWidgets('press-down swaps icon to iconColorPressed', (tester) async {
+      await tester.pumpWidget(
+        TestThemeWrapper(
+          child: WailyIconButton(
+            icon: Assets.icons.common.arrow,
+            onPressed: () {},
+          ),
+        ),
+      );
+
+      final BuildContext context = tester.element(find.byType(WailyIconButton));
+      final style = Theme.of(context).extension<AppIconButtonStyle>()!;
+
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(WailyIconButton)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final pressedIcon = tester.widget<WailyIcon>(find.byType(WailyIcon));
+      expect(pressedIcon.color, style.iconColorPressed);
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+    });
   });
 }
