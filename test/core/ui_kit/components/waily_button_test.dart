@@ -120,6 +120,10 @@ void main() {
         expect(find.byType(WailyIcon), findsOneWidget);
         final icon = tester.widget<WailyIcon>(find.byType(WailyIcon));
         expect(icon.icon, Assets.icons.common.arrow);
+
+        final iconLeft = tester.getTopLeft(find.byType(WailyIcon)).dx;
+        final labelLeft = tester.getTopLeft(find.text('Continue')).dx;
+        expect(iconLeft, lessThan(labelLeft));
       },
     );
 
