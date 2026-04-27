@@ -1,16 +1,25 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waily/app.dart';
 import 'package:waily/core/di/injection.dart';
+import 'package:waily/core/env/env.dart';
 
 void main() {
   setUp(() {
+    resetEnvForTesting();
+    dotenv.testLoad(fileInput: '''
+TYPE=DEV
+API_BASE_URL=https://example.com
+ENABLE_LOGGING=false
+''');
     SharedPreferences.setMockInitialValues({});
     configureDependencies();
   });
 
   tearDown(() async {
     await getIt.reset();
+    resetEnvForTesting();
   });
 
   testWidgets('App boots and shows the demo home screen',
