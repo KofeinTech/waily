@@ -5,29 +5,19 @@ Flutter mobile app for Waily.
 ## Setup
 
 1. Install Flutter via FVM (`fvm install` reads `.fvmrc`).
-2. Copy the env template:
-   ```bash
-   cp .env.example .env
-   ```
-3. Edit `.env` with the values for your environment (see "Environment configuration" below).
-4. Fetch dependencies:
+2. Create a `.env` file in the project root with the keys listed in "Environment configuration" below.
+3. Fetch dependencies:
    ```bash
    fvm flutter pub get
    ```
-5. Run the app:
+4. Run the app:
    ```bash
    fvm flutter run
    ```
 
 ## Environment configuration
 
-The app reads runtime configuration from a single `.env` file in the project root. The file is gitignored — each developer keeps their own copy.
-
-`.env.example` is the committed template. To get started:
-
-```bash
-cp .env.example .env
-```
+The app reads runtime configuration from a single `.env` file in the project root. The file is gitignored — each developer keeps their own copy. Create it with the keys below.
 
 ### Keys
 
@@ -52,7 +42,7 @@ final isDev = kEnvHelper.isDev;
 1. Add a typed getter to `lib/core/env/env_variables.dart` (`_EnvVariables`).
 2. Add the field to `_EnvData` (constructor, field, `props`).
 3. Wire it into the `_env` getter at the bottom of the same file.
-4. Update `.env.example` with a placeholder.
+4. Update the keys table above and add the key to your local `.env`.
 
 ### Hot reload caveat
 
