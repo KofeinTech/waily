@@ -57,4 +57,37 @@ void main() {
 
     expect(tapped, 3);
   });
+
+  testWidgets('switching the active branch animates the change', (
+    tester,
+  ) async {
+    int currentIndex = 0;
+    late StateSetter setOuterState;
+
+    await tester.pumpWidget(
+      TestThemeWrapper(
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            setOuterState = setState;
+            return _FakeShell(
+              currentIndex: currentIndex,
+              onTap: (i) => setState(() => currentIndex = i),
+            );
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(AppRoutes.tabLabels[AppRoutes.home]!), findsOneWidget);
+
+    setOuterState(() => currentIndex = 4);
+    await tester.pump();
+    // Mid-animation: both labels should not be in their final states.
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
+
+    // After settle: only Profile label is shown.
+    expect(find.text(AppRoutes.tabLabels[AppRoutes.profile]!), findsOneWidget);
+    expect(find.text(AppRoutes.tabLabels[AppRoutes.home]!), findsNothing);
+  });
 }
