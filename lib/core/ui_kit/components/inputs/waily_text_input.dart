@@ -97,7 +97,7 @@ class _WailyTextInputState extends State<WailyTextInput> {
     }
 
     return Container(
-      height: s.height,
+      constraints: BoxConstraints(minHeight: s.minHeight),
       padding: EdgeInsets.all(s.padding),
       decoration: BoxDecoration(
         color: background,

@@ -9,7 +9,7 @@ import '../theme/app_colors.dart';
 @immutable
 class AppTextInputStyle extends ThemeExtension<AppTextInputStyle> {
   const AppTextInputStyle._({
-    required this.height,
+    required this.minHeight,
     required this.borderRadius,
     required this.padding,
     required this.itemSpacing,
@@ -28,8 +28,9 @@ class AppTextInputStyle extends ThemeExtension<AppTextInputStyle> {
     required this.disabledIconColor,
   });
 
-  /// Container height. Figma: 70.
-  final double height;
+  /// Minimum container height. Defaults to 52 (the Figma input box without
+  /// label). Grows when a label is rendered above the input.
+  final double minHeight;
 
   /// Container corner radius. Figma: 14.
   final double borderRadius;
@@ -80,7 +81,7 @@ class AppTextInputStyle extends ThemeExtension<AppTextInputStyle> {
   final Color disabledIconColor;
 
   factory AppTextInputStyle.dark() => AppTextInputStyle._(
-    height: 70,
+    minHeight: 52,
     borderRadius: 14,
     padding: 12,
     itemSpacing: 8,
@@ -101,7 +102,7 @@ class AppTextInputStyle extends ThemeExtension<AppTextInputStyle> {
 
   @override
   AppTextInputStyle copyWith({
-    double? height,
+    double? minHeight,
     double? borderRadius,
     double? padding,
     double? itemSpacing,
@@ -119,7 +120,7 @@ class AppTextInputStyle extends ThemeExtension<AppTextInputStyle> {
     Color? iconColor,
     Color? disabledIconColor,
   }) => AppTextInputStyle._(
-    height: height ?? this.height,
+    minHeight: minHeight ?? this.minHeight,
     borderRadius: borderRadius ?? this.borderRadius,
     padding: padding ?? this.padding,
     itemSpacing: itemSpacing ?? this.itemSpacing,
@@ -146,7 +147,7 @@ class AppTextInputStyle extends ThemeExtension<AppTextInputStyle> {
   ) {
     if (other is! AppTextInputStyle) return this;
     return AppTextInputStyle._(
-      height: t < 0.5 ? height : other.height,
+      minHeight: t < 0.5 ? minHeight : other.minHeight,
       borderRadius: t < 0.5 ? borderRadius : other.borderRadius,
       padding: t < 0.5 ? padding : other.padding,
       itemSpacing: t < 0.5 ? itemSpacing : other.itemSpacing,

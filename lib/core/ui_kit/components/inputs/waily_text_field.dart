@@ -39,8 +39,9 @@ class WailyTextField extends StatelessWidget {
     this.variant = WailyTextFieldVariant.primary,
   });
 
-  /// Minimum frame height for Primary inputs (Figma frame = 80px).
-  static const double _primaryMinHeight = 80;
+  /// Minimum input box height. Matches the inner "Input field" frame in
+  /// Figma (the box without the label slot above it).
+  static const double _primaryMinHeight = 52;
 
   final String? label;
   final String? hint;

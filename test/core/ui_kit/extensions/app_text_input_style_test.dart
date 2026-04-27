@@ -5,8 +5,8 @@ import 'package:waily/core/ui_kit/theme/app_colors.dart';
 
 void main() {
   group('AppTextInputStyle', () {
-    test('dark() height is 70 (Figma)', () {
-      expect(AppTextInputStyle.dark().height, 70);
+    test('dark() minHeight is 52 (Figma input box without label)', () {
+      expect(AppTextInputStyle.dark().minHeight, 52);
     });
 
     test('dark() borderRadius is 14 (Figma)', () {
@@ -53,11 +53,11 @@ void main() {
       expect(m.defaultBorderColor, s.defaultBorderColor);
     });
 
-    test('lerp t<0.5 keeps height from this', () {
+    test('lerp t<0.5 keeps minHeight from this', () {
       final a = AppTextInputStyle.dark();
-      final b = a.copyWith(height: 99);
-      expect(a.lerp(b, 0.2).height, a.height);
-      expect(a.lerp(b, 0.8).height, b.height);
+      final b = a.copyWith(minHeight: 99);
+      expect(a.lerp(b, 0.2).minHeight, a.minHeight);
+      expect(a.lerp(b, 0.8).minHeight, b.minHeight);
     });
 
     test('lerp blends activeBorderColor at midpoint', () {
