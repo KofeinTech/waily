@@ -1,18 +1,14 @@
-import 'package:flutter/material.dart';
-import 'core/ui_kit/theme/app_theme.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:talker/talker.dart';
 
-void main() => runApp(const WailyApp());
+import 'app.dart';
+import 'core/di/injection.dart';
+import 'core/observers/app_bloc_observer.dart';
 
-class WailyApp extends StatelessWidget {
-  const WailyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      darkTheme: darkTheme,
-      themeMode: ThemeMode.dark,
-      home: const Scaffold(),
-    );
-  }
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  configureDependencies();
+  Bloc.observer = AppBlocObserver(getIt<Talker>());
+  runApp(const App());
 }
