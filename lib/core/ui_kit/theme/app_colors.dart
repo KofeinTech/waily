@@ -18,9 +18,10 @@ class AppColors {
   static const borderStrong = Color(0xFF3D475E);
 
   // --- Primary Brand ---
-  static const primary = Color(0xFF4285F4);
+  // Figma "Button / Primary, Default" fills with #D4E1FF; primary is the subtle blue.
+  static const primary = Color(0xFFD4E1FF);
+  static const primarySubtle = primary;
   static const primaryLight = Color(0xFFA1C1FF);
-  static const primarySubtle = Color(0xFFD4E1FF);
   static const primaryLowest = Color(0xFFE5EDFF);
 
   // --- Text ---
