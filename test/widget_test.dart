@@ -22,13 +22,11 @@ ENABLE_LOGGING=false
     resetEnvForTesting();
   });
 
-  testWidgets('App boots and shows the demo home screen',
+  testWidgets('App boots into the sign-in placeholder when no token is stored',
       (WidgetTester tester) async {
     await tester.pumpWidget(const App());
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(find.text('Waily — state mgmt demo'), findsOneWidget);
-    expect(find.text('Show notification (direct)'), findsOneWidget);
-    expect(find.text('Trigger error via use case'), findsOneWidget);
+    expect(find.text('Sign-in coming soon'), findsOneWidget);
   });
 }
