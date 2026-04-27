@@ -25,6 +25,7 @@ export 'extensions/app_segmented_picker_style.dart';
 export 'extensions/app_segmented_button_style.dart';
 export 'extensions/app_big_dropdown_style.dart';
 export 'extensions/app_option_style.dart';
+export 'extensions/app_digit_box_style.dart';
 export 'extensions/theme_context_extension.dart';
 
 // Components
@@ -38,6 +39,7 @@ export 'components/inputs/waily_switcher.dart';
 export 'components/inputs/waily_segmented_picker.dart';
 export 'components/inputs/waily_big_dropdown.dart';
 export 'components/inputs/waily_option.dart';
+export 'components/inputs/waily_digit_box.dart';
 export 'components/chips/waily_chip.dart';
 export 'components/indicators/waily_progress_bar.dart';
 export 'components/indicators/waily_loader.dart';

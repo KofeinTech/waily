@@ -15,6 +15,7 @@ import '../extensions/app_segmented_picker_style.dart';
 import '../extensions/app_segmented_button_style.dart';
 import '../extensions/app_big_dropdown_style.dart';
 import '../extensions/app_option_style.dart';
+import '../extensions/app_digit_box_style.dart';
 import 'app_fonts.dart';
 
 /// The single [ThemeData] used throughout the app.
@@ -41,5 +42,6 @@ final ThemeData darkTheme = ThemeData(
     AppSegmentedButtonStyle.dark(),
     AppBigDropdownStyle.dark(),
     AppOptionStyle.dark(),
+    AppDigitBoxStyle.dark(),
   ],
 );
