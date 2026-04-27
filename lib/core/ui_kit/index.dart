@@ -18,6 +18,7 @@ export 'extensions/app_icon_button_style.dart';
 export 'extensions/app_link_style.dart';
 export 'extensions/app_checkbox_style.dart';
 export 'extensions/app_switcher_style.dart';
+export 'extensions/app_chip_style.dart';
 export 'extensions/theme_context_extension.dart';
 
 // Components
@@ -27,5 +28,6 @@ export 'components/buttons/waily_link.dart';
 export 'components/inputs/waily_text_field.dart';
 export 'components/inputs/waily_checkbox.dart';
 export 'components/inputs/waily_switcher.dart';
+export 'components/chips/waily_chip.dart';
 export 'components/cards/waily_card.dart';
 export 'components/icons/waily_icon.dart';

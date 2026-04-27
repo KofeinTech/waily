@@ -8,6 +8,7 @@ import '../extensions/app_icon_button_style.dart';
 import '../extensions/app_link_style.dart';
 import '../extensions/app_checkbox_style.dart';
 import '../extensions/app_switcher_style.dart';
+import '../extensions/app_chip_style.dart';
 import 'app_fonts.dart';
 
 /// The single [ThemeData] used throughout the app.
@@ -27,5 +28,6 @@ final ThemeData darkTheme = ThemeData(
     AppLinkStyle.dark(),
     AppCheckboxStyle.dark(),
     AppSwitcherStyle.dark(),
+    AppChipStyle.dark(),
   ],
 );
