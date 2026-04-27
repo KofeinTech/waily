@@ -22,6 +22,7 @@ import '../extensions/app_message_field_style.dart';
 import '../extensions/app_menu_item_container_style.dart';
 import '../extensions/app_slide_button_style.dart';
 import '../extensions/app_history_card_style.dart';
+import '../extensions/app_list_element_style.dart';
 import 'app_fonts.dart';
 
 /// The single [ThemeData] used throughout the app.
@@ -55,5 +56,6 @@ final ThemeData darkTheme = ThemeData(
     AppMenuItemContainerStyle.dark(),
     AppSlideButtonStyle.dark(),
     AppHistoryCardStyle.dark(),
+    AppListElementStyle.dark(),
   ],
 );
