@@ -70,12 +70,8 @@ void main() {
       expect(AppButtonStyle.dark().heightSmall, 42);
     });
 
-    test('dark() iconSizeDefault is 16', () {
-      expect(AppButtonStyle.dark().iconSizeDefault, 16);
-    });
-
-    test('dark() iconSizeSmall is 16', () {
-      expect(AppButtonStyle.dark().iconSizeSmall, 16);
+    test('dark() iconSize is 16', () {
+      expect(AppButtonStyle.dark().iconSize, 16);
     });
 
     test('dark() iconGap is AppSpacing.s (8)', () {

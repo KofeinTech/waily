@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:waily/core/gen/assets.gen.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,6 +35,23 @@ void main() {
       await tester.pump();
       final svg = tester.widget<SvgPicture>(find.byType(SvgPicture));
       expect(svg.height, 32.0);
+    });
+
+    testWidgets('explicit color reaches SvgPicture as srcIn ColorFilter', (
+      tester,
+    ) async {
+      const expected = Color(0xFFFF0000);
+      await tester.pumpWidget(
+        TestThemeWrapper(
+          child: WailyIcon(icon: Assets.icons.common.arrow, color: expected),
+        ),
+      );
+      await tester.pump();
+      final svg = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      expect(
+        svg.colorFilter,
+        const ColorFilter.mode(expected, BlendMode.srcIn),
+      );
     });
   });
 }

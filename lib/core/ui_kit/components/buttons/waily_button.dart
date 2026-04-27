@@ -146,7 +146,7 @@ class WailyButton extends StatelessWidget {
     final padding = isSmall ? s.paddingSmall : s.paddingDefault;
     final height = isSmall ? s.heightSmall : s.heightDefault;
     final textStyle = isSmall ? s.textStyleSmall : s.textStyleDefault;
-    final iconSize = isSmall ? s.iconSizeSmall : s.iconSizeDefault;
+    final iconSize = s.iconSize;
     final spinner = _spinnerMetrics(size);
 
     final Color background = isDisabled
