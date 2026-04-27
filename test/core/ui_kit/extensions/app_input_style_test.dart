@@ -5,8 +5,11 @@ import 'package:waily/core/ui_kit/theme/app_border_radius.dart';
 
 void main() {
   group('AppInputStyle', () {
-    test('dark() fillColor is AppColors.white (Primary fill in Figma)', () {
-      expect(AppInputStyle.dark().fillColor, AppColors.white);
+    test('dark() fillColor is white at 12% opacity (Figma Primary fill)', () {
+      expect(
+        AppInputStyle.dark().fillColor,
+        AppColors.white.withValues(alpha: 0.12),
+      );
     });
 
     test('dark() secondaryFillColor is AppColors.textTertiary (#7F8799)', () {

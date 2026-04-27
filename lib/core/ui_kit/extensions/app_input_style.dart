@@ -54,9 +54,10 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
   final TextStyle errorStyle;
 
   factory AppInputStyle.dark() => AppInputStyle._(
-    // Primary fill in Figma is white (#FFFFFF). The dark app pairs that with
-    // a subtle blue stroke when focused.
-    fillColor: AppColors.white,
+    // Primary fill in Figma is white at 12% opacity — a subtle translucent
+    // overlay on the dark background, NOT a solid white box. Pairs with a
+    // subtle blue stroke when focused.
+    fillColor: AppColors.white.withValues(alpha: 0.12),
     // Secondary fill in Figma is #7F8799 (textTertiary).
     secondaryFillColor: AppColors.textTertiary,
     // Idle border is transparent in Figma `default` state.
@@ -73,7 +74,7 @@ class AppInputStyle extends ThemeExtension<AppInputStyle> {
       vertical: AppSpacing.m,
     ),
     labelStyle: AppTypography.s16w400(color: AppColors.textSecondary),
-    inputStyle: AppTypography.s16w400(color: AppColors.surfaceVariant),
+    inputStyle: AppTypography.s16w400(color: AppColors.white),
     // Figma Input field / Label TEXT fill is #9EA3AE (textSecondary).
     // Hints/placeholders share the same muted role.
     hintStyle: AppTypography.s16w400(color: AppColors.textSecondary),
