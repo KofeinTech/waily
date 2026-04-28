@@ -1,0 +1,2340 @@
+# WAIL-15 API Client and HTTP Service Layer Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Ship the centralized network stack — thin Dio-wrapping `ApiClient`, auth + logging interceptors with refresh-mutex, sealed `ApiException` hierarchy mapped centrally in `AppGateway.safeCall`, `TokenStore` facade over `SecureStorage`, stub `AuthTokenRefresher`, and a removable `features/example/` slice demonstrating the full datasource → repository → entity path. Bundles a refactor moving the existing storage abstractions into `data/datasources/` to align with the project convention.
+
+**Architecture:** `ApiClient` delegates to a single `Dio` instance composed by `NetworkModule` with `AuthInterceptor` and `LoggingInterceptor` (in that order). Datasources extend `AppGateway` and call `_apiClient.get/post/...` inside `safeCall`. `safeCall` owns `DioException` → `ApiException` mapping. `AuthInterceptor` reads/writes tokens through `TokenStore`, refreshes via `AuthTokenRefresher` (stub returns `null` for now), and uses a `Completer<String?>` mutex to coalesce concurrent 401s. The retry path resolves `Dio` lazily through `getIt<Dio>()` to break the construction-order cycle.
+
+**Tech Stack:** Flutter (FVM), Dio, Freezed, json_serializable, injectable + get_it, dartz Either, mockito + @GenerateMocks (no bloc_test), Talker logging, flutter_secure_storage.
+
+**Spec:** `docs/superpowers/specs/2026-04-28-wail-15-api-client-design.md`
+
+---
+
+## File Structure
+
+**New files (lib):**
+- `lib/core/network/api_client.dart` — abstract `ApiClient`
+- `lib/core/network/api_client_impl.dart` — `@LazySingleton(as: ApiClient)` thin Dio delegate
+- `lib/core/network/network_module.dart` — `@module` building the `Dio` singleton
+- `lib/core/network/exceptions/api_exception.dart` — sealed `ApiException` hierarchy
+- `lib/core/network/interceptors/auth_interceptor.dart` — Bearer attach + 401 refresh-flow
+- `lib/core/network/interceptors/logging_interceptor.dart` — Talker-backed logging
+- `lib/core/network/auth/auth_token_refresher.dart` — abstract `AuthTokenRefresher`
+- `lib/core/network/auth/stub_auth_token_refresher.dart` — `@LazySingleton(as: AuthTokenRefresher)` stub
+- `lib/core/network/auth/token_store.dart` — abstract `TokenStore`
+- `lib/core/network/auth/token_store_impl.dart` — `@LazySingleton(as: TokenStore)` over `SecureStorage`
+
+**New files (example feature):**
+- `lib/features/example/domain/entities/ping_status.dart` — Freezed entity
+- `lib/features/example/domain/repositories/ping_repository.dart` — abstract repo
+- `lib/features/example/data/datasources/ping_api_datasource.dart` — abstract datasource
+- `lib/features/example/data/datasources/ping_api_datasource_impl.dart` — `@Injectable(as: PingApiDatasource)` extends `AppGateway`
+- `lib/features/example/data/models/ping_response.dart` — Freezed + fromJson
+- `lib/features/example/data/mappers/ping_response_mapper.dart` — extension `toEntity()`
+- `lib/features/example/data/repositories/ping_repository_impl.dart` — `@LazySingleton(as: PingRepository)`
+- `lib/features/example/README.md` — "demo only — remove when real features land"
+
+**New tests:**
+- `test/core/network/mocks.dart` (+ generated `mocks.mocks.dart`)
+- `test/core/network/api_client_impl_test.dart`
+- `test/core/network/interceptors/auth_interceptor_test.dart`
+- `test/core/network/interceptors/logging_interceptor_test.dart`
+- `test/features/core/data/gateway/app_gateway_test.dart`
+- `test/features/example/mocks.dart` (+ generated `mocks.mocks.dart`)
+- `test/features/example/data/datasources/ping_api_datasource_impl_test.dart`
+- `test/features/example/data/repositories/ping_repository_impl_test.dart`
+- `test/features/example/data/mappers/ping_response_mapper_test.dart`
+
+**Moved (no content change, in Task 1):**
+- `lib/features/core/domain/sources/local_storage.dart` → `lib/features/core/data/datasources/local_storage.dart`
+- `lib/features/core/domain/sources/secure_storage.dart` → `lib/features/core/data/datasources/secure_storage.dart`
+- `lib/features/core/domain/sources/` directory deleted
+
+**Modified files:**
+- `lib/features/core/data/gateway/app_gateway.dart` — adds `_mapDioException` + `_mapStatus`, throws `ApiException`
+- `lib/features/core/data/datasources/local_storage_impl.dart` — import path
+- `lib/features/core/data/datasources/secure_storage_impl.dart` — import path
+- `lib/core/router/auth_session_gate.dart` — import path for `SecureStorage`
+- `test/features/core/mocks.dart` — import path for `SecureStorage`
+- `test/independent_ac_tests/ac4_persistence_strategy_documented_test.dart` — 4 path strings (2 LocalStorage, 2 SecureStorage)
+- `docs/state-management.md` — one path reference
+- `CLAUDE.md` — "Layer responsibilities" prose: `data/sources/` → `data/datasources/`
+
+**Auto-regenerated by build_runner (do not edit by hand):**
+- `lib/core/di/injection.config.dart`
+- `test/features/core/mocks.mocks.dart`
+- `test/core/network/mocks.mocks.dart` (new)
+- `test/features/example/mocks.mocks.dart` (new)
+- `lib/features/example/data/models/ping_response.freezed.dart`, `ping_response.g.dart`
+- `lib/features/example/domain/entities/ping_status.freezed.dart`
+
+---
+
+## Task 1: Bundled refactor — move storage abstractions to `data/datasources/`
+
+**Files:**
+- Move: `lib/features/core/domain/sources/local_storage.dart` → `lib/features/core/data/datasources/local_storage.dart`
+- Move: `lib/features/core/domain/sources/secure_storage.dart` → `lib/features/core/data/datasources/secure_storage.dart`
+- Delete: `lib/features/core/domain/sources/` (now empty)
+- Modify: `lib/features/core/data/datasources/local_storage_impl.dart`
+- Modify: `lib/features/core/data/datasources/secure_storage_impl.dart`
+- Modify: `lib/core/router/auth_session_gate.dart`
+- Modify: `test/features/core/mocks.dart`
+- Modify: `test/independent_ac_tests/ac4_persistence_strategy_documented_test.dart`
+- Modify: `docs/state-management.md`
+- Modify: `CLAUDE.md`
+
+- [ ] **Step 1: Move the two abstract files using git mv (preserves rename history)**
+
+```bash
+git mv lib/features/core/domain/sources/local_storage.dart lib/features/core/data/datasources/local_storage.dart
+git mv lib/features/core/domain/sources/secure_storage.dart lib/features/core/data/datasources/secure_storage.dart
+rmdir lib/features/core/domain/sources
+```
+
+- [ ] **Step 2: Update import in `local_storage_impl.dart`**
+
+In `lib/features/core/data/datasources/local_storage_impl.dart` change:
+```dart
+import '../../domain/sources/local_storage.dart';
+```
+to:
+```dart
+import 'local_storage.dart';
+```
+
+- [ ] **Step 3: Update import in `secure_storage_impl.dart`**
+
+In `lib/features/core/data/datasources/secure_storage_impl.dart` change:
+```dart
+import '../../domain/sources/secure_storage.dart';
+```
+to:
+```dart
+import 'secure_storage.dart';
+```
+
+- [ ] **Step 4: Update import in `auth_session_gate.dart`**
+
+In `lib/core/router/auth_session_gate.dart` change:
+```dart
+import '../../features/core/domain/sources/secure_storage.dart';
+```
+to:
+```dart
+import '../../features/core/data/datasources/secure_storage.dart';
+```
+
+- [ ] **Step 5: Update import in `test/features/core/mocks.dart`**
+
+Change:
+```dart
+import 'package:waily/features/core/domain/sources/secure_storage.dart';
+```
+to:
+```dart
+import 'package:waily/features/core/data/datasources/secure_storage.dart';
+```
+
+- [ ] **Step 6: Update path strings in `ac4_persistence_strategy_documented_test.dart`**
+
+In `test/independent_ac_tests/ac4_persistence_strategy_documented_test.dart`, replace all four occurrences:
+- `'lib/features/core/domain/sources/local_storage.dart'` → `'lib/features/core/data/datasources/local_storage.dart'` (2 occurrences inside the LocalStorage existence test)
+- `'lib/features/core/domain/sources/secure_storage.dart'` → `'lib/features/core/data/datasources/secure_storage.dart'` (2 occurrences inside the SecureStorage existence test)
+
+- [ ] **Step 7: Update `docs/state-management.md`**
+
+Find the line:
+```
+Two thin storage interfaces live in `lib/features/core/domain/sources/`. Both are registered in DI as lazy singletons.
+```
+Replace `lib/features/core/domain/sources/` with `lib/features/core/data/datasources/`.
+
+- [ ] **Step 8: Update `CLAUDE.md`**
+
+In the "Layer responsibilities" section under `data/`, find:
+```
+- `sources/` — Raw data access: Dio API clients, SharedPreferences, local DB, etc. No business logic.
+```
+Change `sources/` to `datasources/`. Also in `### Data Layer: Datasource Implementation` paragraph any remaining `data/sources/` paths get changed to `data/datasources/`. Verify no other `domain/sources` or `data/sources` strings remain in the file.
+
+- [ ] **Step 9: Regenerate codegen**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Expected: `injection.config.dart` and `mocks.mocks.dart` are rewritten with the new import paths. Watch for compile errors — if any appear they indicate a missed import update from earlier steps.
+
+- [ ] **Step 10: Verify analyze + tests still pass**
+
+```bash
+fvm flutter analyze
+fvm flutter test
+```
+
+Expected: zero analyzer warnings. All existing tests pass (including AC4 file-existence tests, which now point at the new paths).
+
+- [ ] **Step 11: Commit**
+
+```bash
+git add -A
+git commit -m "refactor(wail-15): move storage abstractions to data/datasources/"
+```
+
+---
+
+## Task 2: Add sealed `ApiException` hierarchy
+
+**Files:**
+- Create: `lib/core/network/exceptions/api_exception.dart`
+
+- [ ] **Step 1: Create the file with the full sealed hierarchy**
+
+Path: `lib/core/network/exceptions/api_exception.dart`
+
+```dart
+sealed class ApiException implements Exception {
+  const ApiException(this.message, {this.statusCode});
+
+  final String message;
+  final int? statusCode;
+
+  @override
+  String toString() => '$runtimeType($statusCode): $message';
+}
+
+class NetworkException extends ApiException {
+  const NetworkException([String message = 'No internet connection'])
+      : super(message);
+}
+
+class TimeoutApiException extends ApiException {
+  const TimeoutApiException([String message = 'Request timed out'])
+      : super(message);
+}
+
+class UnauthorizedException extends ApiException {
+  const UnauthorizedException([String message = 'Unauthorized'])
+      : super(message, statusCode: 401);
+}
+
+class ForbiddenException extends ApiException {
+  const ForbiddenException([String message = 'Forbidden'])
+      : super(message, statusCode: 403);
+}
+
+class NotFoundException extends ApiException {
+  const NotFoundException([String message = 'Not found'])
+      : super(message, statusCode: 404);
+}
+
+class BadRequestException extends ApiException {
+  const BadRequestException(int statusCode, [String? message])
+      : super(message ?? 'Bad request', statusCode: statusCode);
+}
+
+class ServerException extends ApiException {
+  const ServerException(int statusCode, [String? message])
+      : super(message ?? 'Server error', statusCode: statusCode);
+}
+
+class UnknownApiException extends ApiException {
+  const UnknownApiException([String message = 'Unknown error'])
+      : super(message);
+}
+```
+
+- [ ] **Step 2: Verify analyzer is clean**
+
+```bash
+fvm flutter analyze lib/core/network/exceptions/api_exception.dart
+```
+
+Expected: zero issues.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add lib/core/network/exceptions/api_exception.dart
+git commit -m "feat(wail-15): add sealed ApiException hierarchy"
+```
+
+---
+
+## Task 3: Update `AppGateway` to map DioException → ApiException (TDD, AC4)
+
+**Files:**
+- Modify: `lib/features/core/data/gateway/app_gateway.dart`
+- Create: `test/features/core/data/gateway/app_gateway_test.dart`
+
+- [ ] **Step 1: Write the failing test file**
+
+Path: `test/features/core/data/gateway/app_gateway_test.dart`
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:talker/talker.dart';
+import 'package:waily/core/network/exceptions/api_exception.dart';
+import 'package:waily/features/core/data/gateway/app_gateway.dart';
+
+class _TestGateway extends AppGateway {
+  _TestGateway(super.talker);
+  Future<T> run<T>(Future<T> Function() op) => safeCall<T>(op);
+  Future<void> runVoid(Future<void> Function() op) => voidSafeCall(op);
+}
+
+DioException _dio(DioExceptionType type, {int? status, dynamic body}) {
+  final reqOpts = RequestOptions(path: '/x');
+  return DioException(
+    requestOptions: reqOpts,
+    type: type,
+    response: status == null
+        ? null
+        : Response(requestOptions: reqOpts, statusCode: status, data: body),
+  );
+}
+
+void main() {
+  late _TestGateway gateway;
+  late Talker talker;
+
+  setUp(() {
+    talker = Talker();
+    gateway = _TestGateway(talker);
+  });
+
+  group('safeCall maps DioException', () {
+    test('connectionError -> NetworkException', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.connectionError)),
+        throwsA(isA<NetworkException>()),
+      );
+    });
+
+    test('connectionTimeout -> TimeoutApiException', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.connectionTimeout)),
+        throwsA(isA<TimeoutApiException>()),
+      );
+    });
+
+    test('sendTimeout -> TimeoutApiException', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.sendTimeout)),
+        throwsA(isA<TimeoutApiException>()),
+      );
+    });
+
+    test('receiveTimeout -> TimeoutApiException', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.receiveTimeout)),
+        throwsA(isA<TimeoutApiException>()),
+      );
+    });
+
+    test('badResponse 401 -> UnauthorizedException', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.badResponse, status: 401)),
+        throwsA(isA<UnauthorizedException>()),
+      );
+    });
+
+    test('badResponse 403 -> ForbiddenException', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.badResponse, status: 403)),
+        throwsA(isA<ForbiddenException>()),
+      );
+    });
+
+    test('badResponse 404 -> NotFoundException', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.badResponse, status: 404)),
+        throwsA(isA<NotFoundException>()),
+      );
+    });
+
+    test('badResponse 422 -> BadRequestException(422)', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.badResponse, status: 422)),
+        throwsA(isA<BadRequestException>()
+            .having((e) => e.statusCode, 'statusCode', 422)),
+      );
+    });
+
+    test('badResponse 500 -> ServerException(500)', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.badResponse, status: 500)),
+        throwsA(isA<ServerException>()
+            .having((e) => e.statusCode, 'statusCode', 500)),
+      );
+    });
+
+    test('badResponse with body.message uses body message', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(
+              DioExceptionType.badResponse,
+              status: 400,
+              body: {'message': 'invalid email'},
+            )),
+        throwsA(isA<BadRequestException>()
+            .having((e) => e.message, 'message', 'invalid email')),
+      );
+    });
+
+    test('cancel -> UnknownApiException("Request cancelled")', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.cancel)),
+        throwsA(isA<UnknownApiException>()
+            .having((e) => e.message, 'message', 'Request cancelled')),
+      );
+    });
+
+    test('unknown -> UnknownApiException', () async {
+      await expectLater(
+        gateway.run(() async => throw _dio(DioExceptionType.unknown)),
+        throwsA(isA<UnknownApiException>()),
+      );
+    });
+  });
+
+  test('non-Dio Exception becomes UnknownApiException', () async {
+    await expectLater(
+      gateway.run(() async => throw const FormatException('bad json')),
+      throwsA(isA<UnknownApiException>()),
+    );
+  });
+
+  test('pre-existing ApiException is rethrown unchanged', () async {
+    const original = NotFoundException('cached');
+    await expectLater(
+      gateway.run<void>(() async => throw original),
+      throwsA(same(original)),
+    );
+  });
+
+  test('voidSafeCall delegates to safeCall', () async {
+    await expectLater(
+      gateway.runVoid(() async => throw _dio(DioExceptionType.connectionError)),
+      throwsA(isA<NetworkException>()),
+    );
+  });
+}
+```
+
+- [ ] **Step 2: Run test, verify it fails**
+
+```bash
+fvm flutter test test/features/core/data/gateway/app_gateway_test.dart
+```
+
+Expected: tests fail because the current `AppGateway` rethrows `DioException` rather than mapping it.
+
+- [ ] **Step 3: Update `AppGateway` to do the mapping**
+
+Replace the entire contents of `lib/features/core/data/gateway/app_gateway.dart`:
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:talker/talker.dart';
+
+import '../../../../core/network/exceptions/api_exception.dart';
+
+abstract class AppGateway {
+  AppGateway(this._talker);
+
+  final Talker _talker;
+
+  @protected
+  Future<T> safeCall<T>(Future<T> Function() operation) async {
+    try {
+      return await operation();
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e, st) {
+      _talker.handle(e, st, 'AppGateway DioException');
+      throw _mapDioException(e);
+    } catch (e, st) {
+      _talker.handle(e, st, 'AppGateway error');
+      throw UnknownApiException(e.toString());
+    }
+  }
+
+  @protected
+  Future<void> voidSafeCall(Future<void> Function() operation) =>
+      safeCall<void>(operation);
+
+  ApiException _mapDioException(DioException e) {
+    return switch (e.type) {
+      DioExceptionType.connectionError => const NetworkException(),
+      DioExceptionType.connectionTimeout ||
+      DioExceptionType.sendTimeout ||
+      DioExceptionType.receiveTimeout =>
+        const TimeoutApiException(),
+      DioExceptionType.badResponse => _mapStatus(e),
+      DioExceptionType.cancel =>
+        const UnknownApiException('Request cancelled'),
+      _ => const UnknownApiException(),
+    };
+  }
+
+  ApiException _mapStatus(DioException e) {
+    final code = e.response?.statusCode ?? 0;
+    final msg = _extractMessage(e.response?.data);
+    return switch (code) {
+      401 => UnauthorizedException(msg ?? 'Unauthorized'),
+      403 => ForbiddenException(msg ?? 'Forbidden'),
+      404 => NotFoundException(msg ?? 'Not found'),
+      >= 500 => ServerException(code, msg),
+      >= 400 => BadRequestException(code, msg),
+      _ => const UnknownApiException(),
+    };
+  }
+
+  String? _extractMessage(dynamic body) {
+    if (body is Map && body['message'] is String) {
+      return body['message'] as String;
+    }
+    return null;
+  }
+}
+```
+
+- [ ] **Step 4: Run tests, verify pass**
+
+```bash
+fvm flutter test test/features/core/data/gateway/app_gateway_test.dart
+```
+
+Expected: all tests pass.
+
+- [ ] **Step 5: Run analyzer**
+
+```bash
+fvm flutter analyze
+```
+
+Expected: zero issues.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add lib/features/core/data/gateway/app_gateway.dart test/features/core/data/gateway/app_gateway_test.dart
+git commit -m "feat(wail-15): map DioException to ApiException in AppGateway"
+```
+
+---
+
+## Task 4: Add `TokenStore` interface + impl (TDD)
+
+**Files:**
+- Create: `lib/core/network/auth/token_store.dart`
+- Create: `lib/core/network/auth/token_store_impl.dart`
+- Create: `test/core/network/auth/token_store_impl_test.dart`
+
+- [ ] **Step 1: Define the abstract `TokenStore`**
+
+Path: `lib/core/network/auth/token_store.dart`
+
+```dart
+abstract class TokenStore {
+  Future<String?> getToken();
+  Future<void> setToken(String token);
+  Future<void> deleteToken();
+}
+```
+
+- [ ] **Step 2: Write the failing test**
+
+Path: `test/core/network/auth/token_store_impl_test.dart`
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:waily/core/network/auth/token_store_impl.dart';
+
+import '../../../features/core/mocks.mocks.dart';
+
+void main() {
+  late MockSecureStorage secureStorage;
+  late TokenStoreImpl tokenStore;
+
+  setUp(() {
+    secureStorage = MockSecureStorage();
+    tokenStore = TokenStoreImpl(secureStorage);
+  });
+
+  test('getToken reads "auth_token" from SecureStorage', () async {
+    when(secureStorage.read('auth_token')).thenAnswer((_) async => 'abc');
+
+    final result = await tokenStore.getToken();
+
+    expect(result, 'abc');
+    verify(secureStorage.read('auth_token')).called(1);
+  });
+
+  test('getToken returns null when SecureStorage returns null', () async {
+    when(secureStorage.read('auth_token')).thenAnswer((_) async => null);
+
+    final result = await tokenStore.getToken();
+
+    expect(result, isNull);
+  });
+
+  test('setToken writes value under "auth_token" key', () async {
+    when(secureStorage.write('auth_token', 'xyz'))
+        .thenAnswer((_) async {});
+
+    await tokenStore.setToken('xyz');
+
+    verify(secureStorage.write('auth_token', 'xyz')).called(1);
+  });
+
+  test('deleteToken removes "auth_token"', () async {
+    when(secureStorage.delete('auth_token')).thenAnswer((_) async {});
+
+    await tokenStore.deleteToken();
+
+    verify(secureStorage.delete('auth_token')).called(1);
+  });
+}
+```
+
+- [ ] **Step 3: Run test, verify it fails (no `TokenStoreImpl` yet)**
+
+```bash
+fvm flutter test test/core/network/auth/token_store_impl_test.dart
+```
+
+Expected: compile error — `TokenStoreImpl` undefined.
+
+- [ ] **Step 4: Implement `TokenStoreImpl`**
+
+Path: `lib/core/network/auth/token_store_impl.dart`
+
+```dart
+import 'package:injectable/injectable.dart';
+
+import '../../../features/core/data/datasources/secure_storage.dart';
+import 'token_store.dart';
+
+@LazySingleton(as: TokenStore)
+class TokenStoreImpl implements TokenStore {
+  TokenStoreImpl(this._secureStorage);
+
+  final SecureStorage _secureStorage;
+
+  static const _key = 'auth_token';
+
+  @override
+  Future<String?> getToken() => _secureStorage.read(_key);
+
+  @override
+  Future<void> setToken(String token) => _secureStorage.write(_key, token);
+
+  @override
+  Future<void> deleteToken() => _secureStorage.delete(_key);
+}
+```
+
+- [ ] **Step 5: Regenerate DI codegen**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Expected: `lib/core/di/injection.config.dart` now registers `TokenStore`.
+
+- [ ] **Step 6: Run tests, verify pass**
+
+```bash
+fvm flutter test test/core/network/auth/token_store_impl_test.dart
+```
+
+Expected: all 4 tests pass.
+
+- [ ] **Step 7: Run analyzer**
+
+```bash
+fvm flutter analyze
+```
+
+Expected: zero issues.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add lib/core/network/auth/token_store.dart lib/core/network/auth/token_store_impl.dart test/core/network/auth/token_store_impl_test.dart lib/core/di/injection.config.dart
+git commit -m "feat(wail-15): add TokenStore facade over SecureStorage"
+```
+
+---
+
+## Task 5: Add `AuthTokenRefresher` interface + stub
+
+**Files:**
+- Create: `lib/core/network/auth/auth_token_refresher.dart`
+- Create: `lib/core/network/auth/stub_auth_token_refresher.dart`
+- Create: `test/core/network/auth/stub_auth_token_refresher_test.dart`
+
+- [ ] **Step 1: Define the abstract**
+
+Path: `lib/core/network/auth/auth_token_refresher.dart`
+
+```dart
+abstract class AuthTokenRefresher {
+  /// Returns the new access token, or null if refresh failed or is unsupported.
+  Future<String?> refresh();
+}
+```
+
+- [ ] **Step 2: Write a smoke test for the stub**
+
+Path: `test/core/network/auth/stub_auth_token_refresher_test.dart`
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:waily/core/network/auth/stub_auth_token_refresher.dart';
+
+void main() {
+  test('StubAuthTokenRefresher.refresh always returns null', () async {
+    final refresher = StubAuthTokenRefresher();
+    expect(await refresher.refresh(), isNull);
+  });
+}
+```
+
+- [ ] **Step 3: Run test, expect failure (`StubAuthTokenRefresher` undefined)**
+
+```bash
+fvm flutter test test/core/network/auth/stub_auth_token_refresher_test.dart
+```
+
+- [ ] **Step 4: Implement the stub**
+
+Path: `lib/core/network/auth/stub_auth_token_refresher.dart`
+
+```dart
+import 'package:injectable/injectable.dart';
+
+import 'auth_token_refresher.dart';
+
+@LazySingleton(as: AuthTokenRefresher)
+class StubAuthTokenRefresher implements AuthTokenRefresher {
+  @override
+  Future<String?> refresh() async => null;
+}
+```
+
+- [ ] **Step 5: Regenerate DI codegen**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+- [ ] **Step 6: Run test + analyzer**
+
+```bash
+fvm flutter test test/core/network/auth/stub_auth_token_refresher_test.dart
+fvm flutter analyze
+```
+
+Expected: pass + zero issues.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add lib/core/network/auth/auth_token_refresher.dart lib/core/network/auth/stub_auth_token_refresher.dart test/core/network/auth/stub_auth_token_refresher_test.dart lib/core/di/injection.config.dart
+git commit -m "feat(wail-15): add AuthTokenRefresher abstraction with stub binding"
+```
+
+---
+
+## Task 6: Add `ApiClient` + `ApiClientImpl` (TDD, AC1)
+
+**Files:**
+- Create: `lib/core/network/api_client.dart`
+- Create: `lib/core/network/api_client_impl.dart`
+- Create: `test/core/network/mocks.dart`
+- Create: `test/core/network/api_client_impl_test.dart`
+
+- [ ] **Step 1: Define abstract `ApiClient`**
+
+Path: `lib/core/network/api_client.dart`
+
+```dart
+import 'package:dio/dio.dart';
+
+abstract class ApiClient {
+  Future<Response<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  });
+
+  Future<Response<T>> post<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  });
+
+  Future<Response<T>> put<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  });
+
+  Future<Response<T>> patch<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  });
+
+  Future<Response<T>> delete<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  });
+}
+```
+
+- [ ] **Step 2: Create the mocks file for the network package**
+
+Path: `test/core/network/mocks.dart`
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:mockito/annotations.dart';
+import 'package:talker/talker.dart';
+import 'package:waily/core/network/api_client.dart';
+import 'package:waily/core/network/auth/auth_token_refresher.dart';
+import 'package:waily/core/network/auth/token_store.dart';
+import 'package:waily/core/router/auth_session_gate.dart';
+
+@GenerateMocks([
+  Dio,
+  ApiClient,
+  TokenStore,
+  AuthTokenRefresher,
+  AuthSessionGate,
+  Talker,
+])
+void main() {}
+```
+
+- [ ] **Step 3: Generate the mocks**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Expected: `test/core/network/mocks.mocks.dart` is created.
+
+- [ ] **Step 4: Write the failing test**
+
+Path: `test/core/network/api_client_impl_test.dart`
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:waily/core/network/api_client_impl.dart';
+
+import 'mocks.mocks.dart';
+
+void main() {
+  late MockDio dio;
+  late ApiClientImpl client;
+
+  setUp(() {
+    dio = MockDio();
+    client = ApiClientImpl(dio);
+  });
+
+  test('get delegates to Dio.get with all named arguments', () async {
+    final response = Response<Map<String, dynamic>>(
+      requestOptions: RequestOptions(path: '/x'),
+      data: {'k': 'v'},
+    );
+    when(dio.get<Map<String, dynamic>>(
+      '/x',
+      queryParameters: anyNamed('queryParameters'),
+      options: anyNamed('options'),
+      cancelToken: anyNamed('cancelToken'),
+    )).thenAnswer((_) async => response);
+
+    final cancel = CancelToken();
+    final result = await client.get<Map<String, dynamic>>(
+      '/x',
+      queryParameters: const {'a': 1},
+      options: Options(headers: const {'X': '1'}),
+      cancelToken: cancel,
+    );
+
+    expect(result, same(response));
+    verify(dio.get<Map<String, dynamic>>(
+      '/x',
+      queryParameters: const {'a': 1},
+      options: argThat(
+        isA<Options>().having((o) => o.headers?['X'], 'headers[X]', '1'),
+        named: 'options',
+      ),
+      cancelToken: cancel,
+    )).called(1);
+  });
+
+  test('post delegates to Dio.post with data + named args', () async {
+    final response = Response<dynamic>(
+      requestOptions: RequestOptions(path: '/p'),
+      data: 'ok',
+    );
+    when(dio.post<dynamic>(
+      '/p',
+      data: anyNamed('data'),
+      queryParameters: anyNamed('queryParameters'),
+      options: anyNamed('options'),
+      cancelToken: anyNamed('cancelToken'),
+    )).thenAnswer((_) async => response);
+
+    await client.post<dynamic>('/p', data: const {'b': 2});
+
+    verify(dio.post<dynamic>(
+      '/p',
+      data: const {'b': 2},
+      queryParameters: null,
+      options: null,
+      cancelToken: null,
+    )).called(1);
+  });
+
+  test('put delegates to Dio.put', () async {
+    final response = Response<void>(requestOptions: RequestOptions(path: '/u'));
+    when(dio.put<void>(any,
+            data: anyNamed('data'),
+            queryParameters: anyNamed('queryParameters'),
+            options: anyNamed('options'),
+            cancelToken: anyNamed('cancelToken')))
+        .thenAnswer((_) async => response);
+
+    await client.put<void>('/u', data: const {'c': 3});
+
+    verify(dio.put<void>('/u',
+            data: const {'c': 3},
+            queryParameters: null,
+            options: null,
+            cancelToken: null))
+        .called(1);
+  });
+
+  test('patch delegates to Dio.patch', () async {
+    final response = Response<void>(requestOptions: RequestOptions(path: '/h'));
+    when(dio.patch<void>(any,
+            data: anyNamed('data'),
+            queryParameters: anyNamed('queryParameters'),
+            options: anyNamed('options'),
+            cancelToken: anyNamed('cancelToken')))
+        .thenAnswer((_) async => response);
+
+    await client.patch<void>('/h', data: const {'d': 4});
+
+    verify(dio.patch<void>('/h',
+            data: const {'d': 4},
+            queryParameters: null,
+            options: null,
+            cancelToken: null))
+        .called(1);
+  });
+
+  test('delete delegates to Dio.delete', () async {
+    final response = Response<void>(requestOptions: RequestOptions(path: '/d'));
+    when(dio.delete<void>(any,
+            data: anyNamed('data'),
+            queryParameters: anyNamed('queryParameters'),
+            options: anyNamed('options'),
+            cancelToken: anyNamed('cancelToken')))
+        .thenAnswer((_) async => response);
+
+    await client.delete<void>('/d');
+
+    verify(dio.delete<void>('/d',
+            data: null,
+            queryParameters: null,
+            options: null,
+            cancelToken: null))
+        .called(1);
+  });
+}
+```
+
+- [ ] **Step 5: Run test, expect failure (`ApiClientImpl` undefined)**
+
+```bash
+fvm flutter test test/core/network/api_client_impl_test.dart
+```
+
+- [ ] **Step 6: Implement `ApiClientImpl`**
+
+Path: `lib/core/network/api_client_impl.dart`
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+
+import 'api_client.dart';
+
+@LazySingleton(as: ApiClient)
+class ApiClientImpl implements ApiClient {
+  ApiClientImpl(this._dio);
+
+  final Dio _dio;
+
+  @override
+  Future<Response<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) =>
+      _dio.get<T>(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      );
+
+  @override
+  Future<Response<T>> post<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) =>
+      _dio.post<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      );
+
+  @override
+  Future<Response<T>> put<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) =>
+      _dio.put<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      );
+
+  @override
+  Future<Response<T>> patch<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) =>
+      _dio.patch<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      );
+
+  @override
+  Future<Response<T>> delete<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) =>
+      _dio.delete<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      );
+}
+```
+
+- [ ] **Step 7: Regenerate DI codegen**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Note: this step may emit a warning that no `Dio` provider is registered yet — that's expected; `NetworkModule` ships in Task 9.
+
+- [ ] **Step 8: Run tests + analyzer**
+
+```bash
+fvm flutter test test/core/network/api_client_impl_test.dart
+fvm flutter analyze
+```
+
+Expected: 5 tests pass, analyzer clean.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add lib/core/network/api_client.dart lib/core/network/api_client_impl.dart test/core/network/mocks.dart test/core/network/mocks.mocks.dart test/core/network/api_client_impl_test.dart lib/core/di/injection.config.dart
+git commit -m "feat(wail-15): add ApiClient thin Dio wrapper"
+```
+
+---
+
+## Task 7: Add `LoggingInterceptor` (TDD, AC3 part 1)
+
+**Files:**
+- Create: `lib/core/network/interceptors/logging_interceptor.dart`
+- Create: `test/core/network/interceptors/logging_interceptor_test.dart`
+
+- [ ] **Step 1: Write the failing test**
+
+Path: `test/core/network/interceptors/logging_interceptor_test.dart`
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:waily/core/env/env.dart';
+import 'package:waily/core/network/interceptors/logging_interceptor.dart';
+
+import '../mocks.mocks.dart';
+
+void main() {
+  setUp(resetEnvForTesting);
+  tearDown(resetEnvForTesting);
+
+  Future<void> loadEnv({required bool enableLogging}) async {
+    dotenv.testLoad(fileInput: '''
+TYPE=DEV
+API_BASE_URL=https://example.test
+ENABLE_LOGGING=$enableLogging
+''');
+  }
+
+  test('onRequest logs via Talker.debug when ENABLE_LOGGING=true', () async {
+    await loadEnv(enableLogging: true);
+    final talker = MockTalker();
+    final interceptor = LoggingInterceptor(talker);
+    final handler = MockRequestInterceptorHandler();
+    final options = RequestOptions(
+      path: '/x',
+      method: 'GET',
+      headers: const {'Authorization': 'Bearer secret', 'X': '1'},
+    );
+
+    interceptor.onRequest(options, handler);
+
+    final captured = verify(talker.debug(captureAny)).captured;
+    expect(captured.length, 1);
+    final log = captured.first as String;
+    expect(log, contains('GET'));
+    expect(log, contains('/x'));
+    expect(log, contains('***'));
+    expect(log, isNot(contains('secret')));
+    verify(handler.next(options)).called(1);
+  });
+
+  test('onResponse logs via Talker.debug when enabled', () async {
+    await loadEnv(enableLogging: true);
+    final talker = MockTalker();
+    final interceptor = LoggingInterceptor(talker);
+    final handler = MockResponseInterceptorHandler();
+    final response = Response<dynamic>(
+      requestOptions: RequestOptions(path: '/y'),
+      statusCode: 200,
+      data: const {'ok': true},
+    );
+
+    interceptor.onResponse(response, handler);
+
+    verify(talker.debug(argThat(contains('200')))).called(1);
+    verify(handler.next(response)).called(1);
+  });
+
+  test('onError logs via Talker.error when enabled', () async {
+    await loadEnv(enableLogging: true);
+    final talker = MockTalker();
+    final interceptor = LoggingInterceptor(talker);
+    final handler = MockErrorInterceptorHandler();
+    final err = DioException(
+      requestOptions: RequestOptions(path: '/z'),
+      type: DioExceptionType.badResponse,
+      response: Response(
+        requestOptions: RequestOptions(path: '/z'),
+        statusCode: 500,
+      ),
+      message: 'boom',
+    );
+
+    interceptor.onError(err, handler);
+
+    verify(talker.error(argThat(contains('500')))).called(1);
+    verify(handler.next(err)).called(1);
+  });
+
+  test('does not log anything when ENABLE_LOGGING=false', () async {
+    await loadEnv(enableLogging: false);
+    final talker = MockTalker();
+    final interceptor = LoggingInterceptor(talker);
+    final reqHandler = MockRequestInterceptorHandler();
+    final resHandler = MockResponseInterceptorHandler();
+    final errHandler = MockErrorInterceptorHandler();
+    final reqOpts = RequestOptions(path: '/q');
+
+    interceptor.onRequest(reqOpts, reqHandler);
+    interceptor.onResponse(
+      Response<dynamic>(requestOptions: reqOpts, statusCode: 200),
+      resHandler,
+    );
+    interceptor.onError(
+      DioException(requestOptions: reqOpts, type: DioExceptionType.unknown),
+      errHandler,
+    );
+
+    verifyNever(talker.debug(any));
+    verifyNever(talker.error(any));
+    verify(reqHandler.next(reqOpts)).called(1);
+    verify(resHandler.next(any)).called(1);
+    verify(errHandler.next(any)).called(1);
+  });
+}
+
+class MockRequestInterceptorHandler extends Mock
+    implements RequestInterceptorHandler {}
+
+class MockResponseInterceptorHandler extends Mock
+    implements ResponseInterceptorHandler {}
+
+class MockErrorInterceptorHandler extends Mock
+    implements ErrorInterceptorHandler {}
+```
+
+- [ ] **Step 2: Run test, expect failure (`LoggingInterceptor` undefined)**
+
+```bash
+fvm flutter test test/core/network/interceptors/logging_interceptor_test.dart
+```
+
+- [ ] **Step 3: Implement the interceptor**
+
+Path: `lib/core/network/interceptors/logging_interceptor.dart`
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:talker/talker.dart';
+
+import '../../env/env.dart';
+
+@injectable
+class LoggingInterceptor extends Interceptor {
+  LoggingInterceptor(this._talker);
+
+  final Talker _talker;
+
+  @override
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) {
+    if (kEnv.enableLogging) {
+      _talker.debug(
+        '-> ${options.method} ${options.uri}\n'
+        'headers: ${_redact(options.headers)}\n'
+        'body: ${options.data}',
+      );
+    }
+    handler.next(options);
+  }
+
+  @override
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
+    if (kEnv.enableLogging) {
+      _talker.debug(
+        '<- ${response.statusCode} ${response.requestOptions.uri}\n'
+        'body: ${response.data}',
+      );
+    }
+    handler.next(response);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (kEnv.enableLogging) {
+      _talker.error(
+        'xx ${err.requestOptions.method} ${err.requestOptions.uri} '
+        '-> ${err.response?.statusCode}\n${err.message}',
+      );
+    }
+    handler.next(err);
+  }
+
+  Map<String, dynamic> _redact(Map<String, dynamic> headers) {
+    final result = Map<String, dynamic>.from(headers);
+    if (result.containsKey('Authorization')) {
+      result['Authorization'] = '***';
+    }
+    return result;
+  }
+}
+```
+
+- [ ] **Step 4: Regenerate DI codegen**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+- [ ] **Step 5: Run tests + analyzer**
+
+```bash
+fvm flutter test test/core/network/interceptors/logging_interceptor_test.dart
+fvm flutter analyze
+```
+
+Expected: 4 tests pass, analyzer clean.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add lib/core/network/interceptors/logging_interceptor.dart test/core/network/interceptors/logging_interceptor_test.dart lib/core/di/injection.config.dart
+git commit -m "feat(wail-15): add LoggingInterceptor with header redaction"
+```
+
+---
+
+## Task 8: Add `AuthInterceptor` with refresh-mutex (TDD, AC3 part 2)
+
+**Files:**
+- Create: `lib/core/network/interceptors/auth_interceptor.dart`
+- Create: `test/core/network/interceptors/auth_interceptor_test.dart`
+
+- [ ] **Step 1: Write the failing test**
+
+Path: `test/core/network/interceptors/auth_interceptor_test.dart`
+
+```dart
+import 'dart:async';
+
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:waily/core/di/injection.dart';
+import 'package:waily/core/network/interceptors/auth_interceptor.dart';
+
+import '../mocks.mocks.dart';
+
+class MockRequestInterceptorHandler extends Mock
+    implements RequestInterceptorHandler {}
+
+class MockErrorInterceptorHandler extends Mock
+    implements ErrorInterceptorHandler {}
+
+Future<void> _pumpEventQueue() async {
+  for (var i = 0; i < 10; i++) {
+    await Future<void>.delayed(Duration.zero);
+  }
+}
+
+DioException _err401({Map<String, dynamic>? extra}) {
+  final reqOpts = RequestOptions(
+    path: '/x',
+    method: 'GET',
+    extra: extra ?? <String, dynamic>{},
+  );
+  return DioException(
+    requestOptions: reqOpts,
+    type: DioExceptionType.badResponse,
+    response: Response<void>(requestOptions: reqOpts, statusCode: 401),
+  );
+}
+
+void main() {
+  late MockTokenStore tokenStore;
+  late MockAuthTokenRefresher refresher;
+  late MockAuthSessionGate sessionGate;
+  late MockDio dio;
+  late AuthInterceptor interceptor;
+
+  setUp(() {
+    tokenStore = MockTokenStore();
+    refresher = MockAuthTokenRefresher();
+    sessionGate = MockAuthSessionGate();
+    dio = MockDio();
+    interceptor = AuthInterceptor(tokenStore, refresher, sessionGate);
+    if (!getIt.isRegistered<Dio>()) {
+      getIt.registerSingleton<Dio>(dio);
+    }
+  });
+
+  tearDown(() {
+    if (getIt.isRegistered<Dio>()) {
+      getIt.unregister<Dio>();
+    }
+  });
+
+  group('onRequest', () {
+    test('attaches Bearer header when TokenStore has a token', () async {
+      when(tokenStore.getToken()).thenAnswer((_) async => 'abc');
+      final handler = MockRequestInterceptorHandler();
+      final options = RequestOptions(path: '/x');
+
+      interceptor.onRequest(options, handler);
+      await _pumpEventQueue();
+
+      expect(options.headers['Authorization'], 'Bearer abc');
+      verify(handler.next(options)).called(1);
+    });
+
+    test('omits Authorization header when token is null', () async {
+      when(tokenStore.getToken()).thenAnswer((_) async => null);
+      final handler = MockRequestInterceptorHandler();
+      final options = RequestOptions(path: '/x');
+
+      interceptor.onRequest(options, handler);
+      await _pumpEventQueue();
+
+      expect(options.headers.containsKey('Authorization'), isFalse);
+      verify(handler.next(options)).called(1);
+    });
+
+    test('omits Authorization header when token is empty string', () async {
+      when(tokenStore.getToken()).thenAnswer((_) async => '');
+      final handler = MockRequestInterceptorHandler();
+      final options = RequestOptions(path: '/x');
+
+      interceptor.onRequest(options, handler);
+      await _pumpEventQueue();
+
+      expect(options.headers.containsKey('Authorization'), isFalse);
+    });
+  });
+
+  group('onError', () {
+    test('non-401 status passes through unchanged', () async {
+      final err = DioException(
+        requestOptions: RequestOptions(path: '/x'),
+        type: DioExceptionType.badResponse,
+        response: Response(
+          requestOptions: RequestOptions(path: '/x'),
+          statusCode: 500,
+        ),
+      );
+      final handler = MockErrorInterceptorHandler();
+
+      interceptor.onError(err, handler);
+      await _pumpEventQueue();
+
+      verify(handler.next(err)).called(1);
+      verifyNever(refresher.refresh());
+    });
+
+    test('401 with skip_auth_retry passes through', () async {
+      final err = _err401(extra: <String, dynamic>{'skip_auth_retry': true});
+      final handler = MockErrorInterceptorHandler();
+
+      interceptor.onError(err, handler);
+      await _pumpEventQueue();
+
+      verify(handler.next(err)).called(1);
+      verifyNever(refresher.refresh());
+    });
+
+    test('401 + refresher returns null -> delete token + session refresh + next(err)',
+        () async {
+      when(refresher.refresh()).thenAnswer((_) async => null);
+      when(tokenStore.deleteToken()).thenAnswer((_) async {});
+      when(sessionGate.refresh()).thenAnswer((_) async {});
+      final err = _err401();
+      final handler = MockErrorInterceptorHandler();
+
+      interceptor.onError(err, handler);
+      await _pumpEventQueue();
+
+      verify(refresher.refresh()).called(1);
+      verify(tokenStore.deleteToken()).called(1);
+      verify(sessionGate.refresh()).called(1);
+      verify(handler.next(err)).called(1);
+    });
+
+    test('401 + refresher returns new token -> setToken + retry + resolve',
+        () async {
+      when(refresher.refresh()).thenAnswer((_) async => 'new_token');
+      when(tokenStore.setToken('new_token')).thenAnswer((_) async {});
+
+      final retryResponse = Response<dynamic>(
+        requestOptions: RequestOptions(path: '/x'),
+        statusCode: 200,
+        data: 'ok',
+      );
+      when(dio.fetch<dynamic>(any)).thenAnswer((_) async => retryResponse);
+
+      final err = _err401();
+      final handler = MockErrorInterceptorHandler();
+
+      interceptor.onError(err, handler);
+      await _pumpEventQueue();
+
+      verify(refresher.refresh()).called(1);
+      verify(tokenStore.setToken('new_token')).called(1);
+      verify(handler.resolve(retryResponse)).called(1);
+
+      final captured = verify(dio.fetch<dynamic>(captureAny)).captured;
+      final retryOptions = captured.single as RequestOptions;
+      expect(retryOptions.headers['Authorization'], 'Bearer new_token');
+      expect(retryOptions.extra['skip_auth_retry'], isTrue);
+    });
+
+    test('refresh-mutex: concurrent 401s call refresher exactly once',
+        () async {
+      final completer = Completer<String?>();
+      when(refresher.refresh()).thenAnswer((_) => completer.future);
+      when(tokenStore.setToken('new_token')).thenAnswer((_) async {});
+
+      final retryResponse = Response<dynamic>(
+        requestOptions: RequestOptions(path: '/x'),
+        statusCode: 200,
+      );
+      when(dio.fetch<dynamic>(any)).thenAnswer((_) async => retryResponse);
+
+      final h1 = MockErrorInterceptorHandler();
+      final h2 = MockErrorInterceptorHandler();
+
+      interceptor.onError(_err401(), h1);
+      interceptor.onError(_err401(), h2);
+
+      // Let both onError calls reach _refreshOnce.
+      await _pumpEventQueue();
+
+      // Now release the refresh.
+      completer.complete('new_token');
+      await _pumpEventQueue();
+
+      verify(refresher.refresh()).called(1);
+      verify(dio.fetch<dynamic>(any)).called(2);
+      verify(h1.resolve(any)).called(1);
+      verify(h2.resolve(any)).called(1);
+    });
+
+    test('retry that throws DioException -> handler.next(retryErr)', () async {
+      when(refresher.refresh()).thenAnswer((_) async => 'new_token');
+      when(tokenStore.setToken('new_token')).thenAnswer((_) async {});
+      final retryErr = DioException(
+        requestOptions: RequestOptions(path: '/x'),
+        type: DioExceptionType.badResponse,
+        response: Response(
+          requestOptions: RequestOptions(path: '/x'),
+          statusCode: 500,
+        ),
+      );
+      when(dio.fetch<dynamic>(any)).thenThrow(retryErr);
+
+      final handler = MockErrorInterceptorHandler();
+      interceptor.onError(_err401(), handler);
+      await _pumpEventQueue();
+
+      verify(handler.next(retryErr)).called(1);
+      verifyNever(handler.resolve(any));
+    });
+  });
+}
+```
+
+- [ ] **Step 2: Run test, expect failure (`AuthInterceptor` undefined)**
+
+```bash
+fvm flutter test test/core/network/interceptors/auth_interceptor_test.dart
+```
+
+- [ ] **Step 3: Implement the interceptor**
+
+Path: `lib/core/network/interceptors/auth_interceptor.dart`
+
+```dart
+import 'dart:async';
+
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+
+import '../../di/injection.dart';
+import '../../router/auth_session_gate.dart';
+import '../auth/auth_token_refresher.dart';
+import '../auth/token_store.dart';
+
+@injectable
+class AuthInterceptor extends Interceptor {
+  AuthInterceptor(this._tokenStore, this._refresher, this._sessionGate);
+
+  final TokenStore _tokenStore;
+  final AuthTokenRefresher _refresher;
+  final AuthSessionGate _sessionGate;
+
+  Completer<String?>? _ongoingRefresh;
+
+  @override
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) {
+    _attachToken(options, handler);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    _handleError(err, handler);
+  }
+
+  Future<void> _attachToken(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    final token = await _tokenStore.getToken();
+    if (token != null && token.isNotEmpty) {
+      options.headers['Authorization'] = 'Bearer $token';
+    }
+    handler.next(options);
+  }
+
+  Future<void> _handleError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    if (err.response?.statusCode != 401) {
+      handler.next(err);
+      return;
+    }
+    if (err.requestOptions.extra['skip_auth_retry'] == true) {
+      handler.next(err);
+      return;
+    }
+
+    final newToken = await _refreshOnce();
+    if (newToken == null) {
+      await _tokenStore.deleteToken();
+      await _sessionGate.refresh();
+      handler.next(err);
+      return;
+    }
+
+    final retry = err.requestOptions.copyWith();
+    retry.headers['Authorization'] = 'Bearer $newToken';
+    retry.extra['skip_auth_retry'] = true;
+    try {
+      final response = await getIt<Dio>().fetch<dynamic>(retry);
+      handler.resolve(response);
+    } on DioException catch (retryErr) {
+      handler.next(retryErr);
+    }
+  }
+
+  Future<String?> _refreshOnce() {
+    final existing = _ongoingRefresh;
+    if (existing != null) return existing.future;
+    final completer = Completer<String?>();
+    _ongoingRefresh = completer;
+    _doRefresh(completer);
+    return completer.future;
+  }
+
+  Future<void> _doRefresh(Completer<String?> completer) async {
+    try {
+      final token = await _refresher.refresh();
+      if (token != null) await _tokenStore.setToken(token);
+      completer.complete(token);
+    } catch (_) {
+      completer.complete(null);
+    } finally {
+      _ongoingRefresh = null;
+    }
+  }
+}
+```
+
+- [ ] **Step 4: Regenerate DI codegen**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+- [ ] **Step 5: Run tests + analyzer**
+
+```bash
+fvm flutter test test/core/network/interceptors/auth_interceptor_test.dart
+fvm flutter analyze
+```
+
+Expected: all 8 tests pass, analyzer clean.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add lib/core/network/interceptors/auth_interceptor.dart test/core/network/interceptors/auth_interceptor_test.dart lib/core/di/injection.config.dart
+git commit -m "feat(wail-15): add AuthInterceptor with refresh-mutex"
+```
+
+---
+
+## Task 9: Add `NetworkModule` wiring Dio with interceptors
+
+**Files:**
+- Create: `lib/core/network/network_module.dart`
+
+- [ ] **Step 1: Implement the module**
+
+Path: `lib/core/network/network_module.dart`
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+
+import '../env/env.dart';
+import 'interceptors/auth_interceptor.dart';
+import 'interceptors/logging_interceptor.dart';
+
+@module
+abstract class NetworkModule {
+  @lazySingleton
+  Dio dio(AuthInterceptor auth, LoggingInterceptor logging) {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: kEnv.apiBaseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
+        contentType: Headers.jsonContentType,
+        responseType: ResponseType.json,
+      ),
+    );
+    dio.interceptors.addAll([auth, logging]);
+    return dio;
+  }
+}
+```
+
+- [ ] **Step 2: Regenerate DI**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Expected: `injection.config.dart` registers `Dio` via the module factory.
+
+- [ ] **Step 3: Verify `flutter analyze` is clean**
+
+```bash
+fvm flutter analyze
+```
+
+Expected: zero issues.
+
+- [ ] **Step 4: Smoke-run the existing test suite**
+
+```bash
+fvm flutter test
+```
+
+Expected: all existing tests still pass; nothing in the suite tries to instantiate `Dio` at boot, so the new wiring is exercised only by future feature tests.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add lib/core/network/network_module.dart lib/core/di/injection.config.dart
+git commit -m "feat(wail-15): wire Dio + interceptors via NetworkModule"
+```
+
+---
+
+## Task 10: Add `PingStatus` entity + `PingRepository` interface
+
+**Files:**
+- Create: `lib/features/example/domain/entities/ping_status.dart`
+- Create: `lib/features/example/domain/repositories/ping_repository.dart`
+
+- [ ] **Step 1: Create the entity**
+
+Path: `lib/features/example/domain/entities/ping_status.dart`
+
+```dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'ping_status.freezed.dart';
+
+@freezed
+abstract class PingStatus with _$PingStatus {
+  const factory PingStatus({
+    required String status,
+    required DateTime serverTime,
+  }) = _PingStatus;
+}
+```
+
+- [ ] **Step 2: Create the abstract repository**
+
+Path: `lib/features/example/domain/repositories/ping_repository.dart`
+
+```dart
+import '../entities/ping_status.dart';
+
+abstract class PingRepository {
+  Future<PingStatus> ping();
+}
+```
+
+- [ ] **Step 3: Generate `ping_status.freezed.dart`**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+- [ ] **Step 4: Verify analyzer**
+
+```bash
+fvm flutter analyze
+```
+
+Expected: zero issues.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add lib/features/example/domain/entities/ping_status.dart lib/features/example/domain/entities/ping_status.freezed.dart lib/features/example/domain/repositories/ping_repository.dart
+git commit -m "feat(wail-15): add example feature PingStatus entity + PingRepository interface"
+```
+
+---
+
+## Task 11: Add `PingResponse` model + mapper (TDD)
+
+**Files:**
+- Create: `lib/features/example/data/models/ping_response.dart`
+- Create: `lib/features/example/data/mappers/ping_response_mapper.dart`
+- Create: `test/features/example/data/mappers/ping_response_mapper_test.dart`
+
+- [ ] **Step 1: Write the failing mapper test**
+
+Path: `test/features/example/data/mappers/ping_response_mapper_test.dart`
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:waily/features/example/data/mappers/ping_response_mapper.dart';
+import 'package:waily/features/example/data/models/ping_response.dart';
+
+void main() {
+  test('toEntity copies status and parses serverTime', () {
+    final response = PingResponse(
+      status: 'ok',
+      serverTime: '2026-04-28T10:30:00.000Z',
+    );
+
+    final entity = response.toEntity();
+
+    expect(entity.status, 'ok');
+    expect(entity.serverTime, DateTime.parse('2026-04-28T10:30:00.000Z'));
+  });
+
+  test('PingResponse.fromJson decodes server_time as snake_case key', () {
+    final response = PingResponse.fromJson(const {
+      'status': 'ok',
+      'server_time': '2026-04-28T11:00:00.000Z',
+    });
+
+    expect(response.status, 'ok');
+    expect(response.serverTime, '2026-04-28T11:00:00.000Z');
+  });
+}
+```
+
+- [ ] **Step 2: Run test, expect failure (model + mapper undefined)**
+
+```bash
+fvm flutter test test/features/example/data/mappers/ping_response_mapper_test.dart
+```
+
+- [ ] **Step 3: Create the model**
+
+Path: `lib/features/example/data/models/ping_response.dart`
+
+```dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'ping_response.freezed.dart';
+part 'ping_response.g.dart';
+
+@freezed
+abstract class PingResponse with _$PingResponse {
+  const factory PingResponse({
+    required String status,
+    @JsonKey(name: 'server_time') required String serverTime,
+  }) = _PingResponse;
+
+  factory PingResponse.fromJson(Map<String, dynamic> json) =>
+      _$PingResponseFromJson(json);
+}
+```
+
+- [ ] **Step 4: Create the mapper**
+
+Path: `lib/features/example/data/mappers/ping_response_mapper.dart`
+
+```dart
+import '../../domain/entities/ping_status.dart';
+import '../models/ping_response.dart';
+
+extension PingResponseMapper on PingResponse {
+  PingStatus toEntity() => PingStatus(
+        status: status,
+        serverTime: DateTime.parse(serverTime),
+      );
+}
+```
+
+- [ ] **Step 5: Generate `freezed` + `g` files**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+- [ ] **Step 6: Run tests + analyzer**
+
+```bash
+fvm flutter test test/features/example/data/mappers/ping_response_mapper_test.dart
+fvm flutter analyze
+```
+
+Expected: 2 tests pass, analyzer clean.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add lib/features/example/data/models/ping_response.dart lib/features/example/data/models/ping_response.freezed.dart lib/features/example/data/models/ping_response.g.dart lib/features/example/data/mappers/ping_response_mapper.dart test/features/example/data/mappers/ping_response_mapper_test.dart
+git commit -m "feat(wail-15): add PingResponse model and mapper to PingStatus"
+```
+
+---
+
+## Task 12: Add `PingApiDatasource` interface + impl (TDD, AC2 + AC5)
+
+**Files:**
+- Create: `lib/features/example/data/datasources/ping_api_datasource.dart`
+- Create: `lib/features/example/data/datasources/ping_api_datasource_impl.dart`
+- Create: `test/features/example/mocks.dart`
+- Create: `test/features/example/data/datasources/ping_api_datasource_impl_test.dart`
+
+- [ ] **Step 1: Define the abstract datasource**
+
+Path: `lib/features/example/data/datasources/ping_api_datasource.dart`
+
+```dart
+import '../models/ping_response.dart';
+
+abstract class PingApiDatasource {
+  Future<PingResponse> getPing();
+}
+```
+
+- [ ] **Step 2: Create the example mocks file**
+
+Path: `test/features/example/mocks.dart`
+
+```dart
+import 'package:mockito/annotations.dart';
+import 'package:talker/talker.dart';
+import 'package:waily/core/network/api_client.dart';
+import 'package:waily/features/example/data/datasources/ping_api_datasource.dart';
+
+@GenerateMocks([
+  ApiClient,
+  PingApiDatasource,
+  Talker,
+])
+void main() {}
+```
+
+- [ ] **Step 3: Generate the mocks**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Expected: `test/features/example/mocks.mocks.dart` is created.
+
+- [ ] **Step 4: Write the failing datasource test**
+
+Path: `test/features/example/data/datasources/ping_api_datasource_impl_test.dart`
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:waily/core/network/exceptions/api_exception.dart';
+import 'package:waily/features/example/data/datasources/ping_api_datasource_impl.dart';
+
+import '../../mocks.mocks.dart';
+
+void main() {
+  late MockApiClient apiClient;
+  late MockTalker talker;
+  late PingApiDatasourceImpl datasource;
+
+  setUp(() {
+    apiClient = MockApiClient();
+    talker = MockTalker();
+    datasource = PingApiDatasourceImpl(talker, apiClient);
+  });
+
+  test('getPing calls ApiClient.get("/ping") and decodes response', () async {
+    when(apiClient.get<Map<String, dynamic>>('/ping')).thenAnswer((_) async =>
+        Response<Map<String, dynamic>>(
+          requestOptions: RequestOptions(path: '/ping'),
+          statusCode: 200,
+          data: const {
+            'status': 'ok',
+            'server_time': '2026-04-28T10:30:00.000Z',
+          },
+        ));
+
+    final result = await datasource.getPing();
+
+    expect(result.status, 'ok');
+    expect(result.serverTime, '2026-04-28T10:30:00.000Z');
+    verify(apiClient.get<Map<String, dynamic>>('/ping')).called(1);
+  });
+
+  test('connection error -> NetworkException via safeCall mapping', () async {
+    when(apiClient.get<Map<String, dynamic>>('/ping')).thenThrow(
+      DioException(
+        requestOptions: RequestOptions(path: '/ping'),
+        type: DioExceptionType.connectionError,
+      ),
+    );
+
+    expect(
+      () => datasource.getPing(),
+      throwsA(isA<NetworkException>()),
+    );
+  });
+
+  test('500 response -> ServerException with statusCode 500', () async {
+    when(apiClient.get<Map<String, dynamic>>('/ping')).thenThrow(
+      DioException(
+        requestOptions: RequestOptions(path: '/ping'),
+        type: DioExceptionType.badResponse,
+        response: Response(
+          requestOptions: RequestOptions(path: '/ping'),
+          statusCode: 500,
+        ),
+      ),
+    );
+
+    expect(
+      () => datasource.getPing(),
+      throwsA(isA<ServerException>()
+          .having((e) => e.statusCode, 'statusCode', 500)),
+    );
+  });
+}
+```
+
+- [ ] **Step 5: Run test, expect failure (`PingApiDatasourceImpl` undefined)**
+
+```bash
+fvm flutter test test/features/example/data/datasources/ping_api_datasource_impl_test.dart
+```
+
+- [ ] **Step 6: Implement the datasource**
+
+Path: `lib/features/example/data/datasources/ping_api_datasource_impl.dart`
+
+```dart
+import 'package:injectable/injectable.dart';
+
+import '../../../../core/network/api_client.dart';
+import '../../../core/data/gateway/app_gateway.dart';
+import '../models/ping_response.dart';
+import 'ping_api_datasource.dart';
+
+@Injectable(as: PingApiDatasource)
+class PingApiDatasourceImpl extends AppGateway
+    implements PingApiDatasource {
+  PingApiDatasourceImpl(super.talker, this._apiClient);
+
+  final ApiClient _apiClient;
+
+  @override
+  Future<PingResponse> getPing() => safeCall<PingResponse>(() async {
+        final response = await _apiClient.get<Map<String, dynamic>>('/ping');
+        return PingResponse.fromJson(response.data!);
+      });
+}
+```
+
+- [ ] **Step 7: Regenerate DI codegen**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+- [ ] **Step 8: Run tests + analyzer**
+
+```bash
+fvm flutter test test/features/example/data/datasources/ping_api_datasource_impl_test.dart
+fvm flutter analyze
+```
+
+Expected: 3 tests pass, analyzer clean.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add lib/features/example/data/datasources/ping_api_datasource.dart lib/features/example/data/datasources/ping_api_datasource_impl.dart test/features/example/mocks.dart test/features/example/mocks.mocks.dart test/features/example/data/datasources/ping_api_datasource_impl_test.dart lib/core/di/injection.config.dart
+git commit -m "feat(wail-15): add PingApiDatasource with safeCall integration"
+```
+
+---
+
+## Task 13: Add `PingRepositoryImpl` (TDD)
+
+**Files:**
+- Create: `lib/features/example/data/repositories/ping_repository_impl.dart`
+- Create: `test/features/example/data/repositories/ping_repository_impl_test.dart`
+
+- [ ] **Step 1: Write the failing repository test**
+
+Path: `test/features/example/data/repositories/ping_repository_impl_test.dart`
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:waily/features/example/data/models/ping_response.dart';
+import 'package:waily/features/example/data/repositories/ping_repository_impl.dart';
+
+import '../../mocks.mocks.dart';
+
+void main() {
+  late MockPingApiDatasource datasource;
+  late PingRepositoryImpl repository;
+
+  setUp(() {
+    datasource = MockPingApiDatasource();
+    repository = PingRepositoryImpl(datasource);
+  });
+
+  test('ping returns mapped PingStatus from datasource response', () async {
+    when(datasource.getPing()).thenAnswer((_) async => PingResponse(
+          status: 'ok',
+          serverTime: '2026-04-28T12:00:00.000Z',
+        ));
+
+    final result = await repository.ping();
+
+    expect(result.status, 'ok');
+    expect(result.serverTime, DateTime.parse('2026-04-28T12:00:00.000Z'));
+    verify(datasource.getPing()).called(1);
+  });
+
+  test('ping propagates datasource exception', () async {
+    when(datasource.getPing()).thenThrow(Exception('boom'));
+
+    expect(() => repository.ping(), throwsA(isA<Exception>()));
+  });
+}
+```
+
+- [ ] **Step 2: Run test, expect failure (`PingRepositoryImpl` undefined)**
+
+```bash
+fvm flutter test test/features/example/data/repositories/ping_repository_impl_test.dart
+```
+
+- [ ] **Step 3: Implement the repository**
+
+Path: `lib/features/example/data/repositories/ping_repository_impl.dart`
+
+```dart
+import 'package:injectable/injectable.dart';
+
+import '../../domain/entities/ping_status.dart';
+import '../../domain/repositories/ping_repository.dart';
+import '../datasources/ping_api_datasource.dart';
+import '../mappers/ping_response_mapper.dart';
+
+@LazySingleton(as: PingRepository)
+class PingRepositoryImpl implements PingRepository {
+  PingRepositoryImpl(this._datasource);
+
+  final PingApiDatasource _datasource;
+
+  @override
+  Future<PingStatus> ping() async {
+    final response = await _datasource.getPing();
+    return response.toEntity();
+  }
+}
+```
+
+- [ ] **Step 4: Regenerate DI codegen**
+
+```bash
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+- [ ] **Step 5: Run tests + analyzer**
+
+```bash
+fvm flutter test test/features/example/data/repositories/ping_repository_impl_test.dart
+fvm flutter analyze
+```
+
+Expected: 2 tests pass, analyzer clean.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add lib/features/example/data/repositories/ping_repository_impl.dart test/features/example/data/repositories/ping_repository_impl_test.dart lib/core/di/injection.config.dart
+git commit -m "feat(wail-15): add PingRepository impl with mapper"
+```
+
+---
+
+## Task 14: Add `features/example/README.md` and final verification
+
+**Files:**
+- Create: `lib/features/example/README.md`
+
+- [ ] **Step 1: Write the README**
+
+Path: `lib/features/example/README.md`
+
+```markdown
+# features/example/
+
+**Demo only — remove when real auth/user features land.**
+
+This feature exists solely to demonstrate the network stack introduced in
+WAIL-15: `ApiClient` (thin Dio wrapper), `AuthInterceptor` (refresh-flow),
+`LoggingInterceptor`, `AppGateway` exception mapping, and the standard
+datasource → repository → entity slice with mapper.
+
+## What's here
+
+- `domain/entities/ping_status.dart` — domain model
+- `domain/repositories/ping_repository.dart` — abstract repository
+- `data/datasources/ping_api_datasource.dart` — abstract datasource
+- `data/datasources/ping_api_datasource_impl.dart` — extends `AppGateway`,
+  calls `_apiClient.get('/ping')` inside `safeCall`
+- `data/models/ping_response.dart` — Freezed model with `fromJson`
+- `data/mappers/ping_response_mapper.dart` — `PingResponse.toEntity()`
+- `data/repositories/ping_repository_impl.dart` — composes the datasource
+  and mapper
+
+## How to delete
+
+When the first real feature replaces this slice (typically auth or user
+profile), the entire folder can be removed in one motion:
+
+```bash
+rm -rf lib/features/example/ test/features/example/
+```
+
+Then run `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+to regenerate `injection.config.dart` without the example bindings.
+```
+
+- [ ] **Step 2: Run the full test suite**
+
+```bash
+fvm flutter test
+```
+
+Expected: every test in the project passes (including all new tests, all
+WAIL-13 tests, all AC tests).
+
+- [ ] **Step 3: Run the analyzer on the whole project**
+
+```bash
+fvm flutter analyze
+```
+
+Expected: zero issues.
+
+- [ ] **Step 4: Format**
+
+```bash
+dart format .
+```
+
+If formatting changes any files, stage them.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add lib/features/example/README.md
+git commit -m "docs(wail-15): add features/example README explaining demo scope"
+```
+
+- [ ] **Step 6: Push**
+
+```bash
+git push
+```
+
+---
+
+## Spec coverage cross-check
+
+| Spec section / requirement | Covered by |
+|---|---|
+| Bundled refactor | Task 1 |
+| Sealed `ApiException` | Task 2 |
+| `AppGateway` mapping (AC4) | Task 3 |
+| `TokenStore` + impl | Task 4 |
+| `AuthTokenRefresher` + stub | Task 5 |
+| `ApiClient` + `ApiClientImpl` (AC1) | Task 6 |
+| `LoggingInterceptor` (AC3) | Task 7 |
+| `AuthInterceptor` with refresh-mutex (AC3) | Task 8 |
+| `NetworkModule` Dio assembly | Task 9 |
+| `PingStatus` entity + `PingRepository` interface | Task 10 |
+| `PingResponse` + mapper (AC2) | Task 11 |
+| `PingApiDatasource` + impl (AC2 + AC5) | Task 12 |
+| `PingRepositoryImpl` (AC2) | Task 13 |
+| Example README + final verification | Task 14 |
+
+All five Acceptance Criteria are exercised by the test files listed in the
+spec's "Coverage by AC" table:
+
+- AC1 → `api_client_impl_test.dart` (Task 6)
+- AC2 → mapper, datasource, repository tests (Tasks 11, 12, 13)
+- AC3 → `auth_interceptor_test.dart`, `logging_interceptor_test.dart` (Tasks 7, 8)
+- AC4 → `app_gateway_test.dart` + integration check inside datasource test (Tasks 3, 12)
+- AC5 → datasource + repository tests (Tasks 12, 13) plus the README documenting the example slice (Task 14)
