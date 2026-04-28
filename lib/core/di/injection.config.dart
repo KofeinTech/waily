@@ -9,12 +9,15 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:dio/dio.dart' as _i361;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:talker/talker.dart' as _i993;
 import 'package:waily/core/database/app_database.dart' as _i938;
 import 'package:waily/core/database/database_module.dart' as _i513;
 import 'package:waily/core/di/app_module.dart' as _i267;
+import 'package:waily/core/network/api_client.dart' as _i176;
+import 'package:waily/core/network/api_client_impl.dart' as _i933;
 import 'package:waily/core/network/auth/auth_token_refresher.dart' as _i159;
 import 'package:waily/core/network/auth/stub_auth_token_refresher.dart'
     as _i332;
@@ -85,6 +88,9 @@ extension GetItInjectableX on _i174.GetIt {
       dispose: _i513.closeDatabase,
     );
     gh.lazySingleton<_i550.LocalStorage>(() => _i1013.LocalStorageImpl());
+    gh.lazySingleton<_i176.ApiClient>(
+      () => _i933.ApiClientImpl(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i82.SecureStorage>(() => _i442.SecureStorageImpl());
     gh.lazySingleton<_i159.AuthTokenRefresher>(
       () => _i332.StubAuthTokenRefresher(),
