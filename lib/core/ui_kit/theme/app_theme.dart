@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 import '../extensions/app_color_style.dart';
 import '../extensions/app_text_styles.dart';
 import '../extensions/app_button_style.dart';
@@ -35,6 +36,7 @@ final ThemeData darkTheme = ThemeData(
   brightness: Brightness.dark,
   fontFamily: AppFonts.helveticaNeue,
   useMaterial3: true,
+  scaffoldBackgroundColor: AppColors.background,
   extensions: [
     AppColorStyle.dark(),
     AppTextStyles.dark(),

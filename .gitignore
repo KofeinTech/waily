@@ -9,6 +9,7 @@ build/
 .vscode/
 *.lock
 !pubspec.lock
+!ios/Podfile.lock
 
 # FVM
 

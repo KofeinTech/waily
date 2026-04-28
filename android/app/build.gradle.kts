@@ -24,7 +24,7 @@ android {
         applicationId = "com.improvs.waily"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -41,4 +41,11 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // androidx.core:core-splashscreen back-ports the Android 12+
+    // SplashScreen API to older releases and lets MainActivity hold
+    // the splash on screen until Flutter is ready to draw.
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
