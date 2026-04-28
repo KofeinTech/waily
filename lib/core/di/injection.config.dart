@@ -34,6 +34,10 @@ import 'package:waily/features/meal/data/datasources/meal_datasource.dart'
     as _i253;
 import 'package:waily/features/meal/data/datasources/meal_datasource_impl.dart'
     as _i617;
+import 'package:waily/features/meal/data/repositories/meal_repository_impl.dart'
+    as _i241;
+import 'package:waily/features/meal/domain/repositories/meal_repository.dart'
+    as _i756;
 import 'package:waily/features/user/data/datasources/user_datasource.dart'
     as _i558;
 import 'package:waily/features/user/data/datasources/user_datasource_impl.dart'
@@ -87,6 +91,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i253.MealDatasource>(
       () =>
           _i617.MealDatasourceImpl(gh<_i993.Talker>(), gh<_i938.AppDatabase>()),
+    );
+    gh.lazySingleton<_i756.MealRepository>(
+      () => _i241.MealRepositoryImpl(gh<_i253.MealDatasource>()),
     );
     gh.lazySingleton<_i169.AppNotificationCubit>(
       () => _i169.AppNotificationCubit(gh<_i349.NotificationManager>()),
