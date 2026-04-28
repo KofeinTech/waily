@@ -681,7 +681,7 @@ void main() {
       )).thenAnswer((_) async => Future.value());
       when(ds.getById(any)).thenAnswer((_) async => null);
 
-      expect(
+      await expectLater(
         () => repo.update(const User(id: 1)),
         throwsA(isA<StateError>()),
       );
