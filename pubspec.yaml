@@ -41,6 +41,13 @@ dev_dependencies:
   drift_dev: ^2.21.0
   sqlite3: any
 
+# Temporary: pin path_provider_foundation below the version that
+# pulls in objective_c with native build hooks (which break
+# `dart compile aot-snapshot` invoked by build_runner 2.14.1 under
+# Dart 3.10.7). Remove once build_runner migrates to `dart build`.
+dependency_overrides:
+  path_provider_foundation: '<2.5.0'
+
 flutter:
   uses-material-design: true
   assets:
