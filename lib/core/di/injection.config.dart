@@ -38,6 +38,10 @@ import 'package:waily/features/user/data/repositories/user_repository_impl.dart'
     as _i164;
 import 'package:waily/features/user/domain/repositories/user_repository.dart'
     as _i803;
+import 'package:waily/features/workout/data/datasources/workout_datasource.dart'
+    as _i244;
+import 'package:waily/features/workout/data/datasources/workout_datasource_impl.dart'
+    as _i714;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -65,6 +69,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i803.UserRepository>(
       () => _i164.UserRepositoryImpl(gh<_i558.UserDatasource>()),
+    );
+    gh.factory<_i244.WorkoutDatasource>(
+      () => _i714.WorkoutDatasourceImpl(
+        gh<_i993.Talker>(),
+        gh<_i938.AppDatabase>(),
+      ),
     );
     gh.lazySingleton<_i169.AppNotificationCubit>(
       () => _i169.AppNotificationCubit(gh<_i349.NotificationManager>()),
