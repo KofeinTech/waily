@@ -30,6 +30,10 @@ import 'package:waily/features/core/domain/use_cases/trigger_demo_error_use_case
     as _i374;
 import 'package:waily/features/core/presentation/bloc/app_notification_cubit.dart'
     as _i169;
+import 'package:waily/features/meal/data/datasources/meal_datasource.dart'
+    as _i253;
+import 'package:waily/features/meal/data/datasources/meal_datasource_impl.dart'
+    as _i617;
 import 'package:waily/features/user/data/datasources/user_datasource.dart'
     as _i558;
 import 'package:waily/features/user/data/datasources/user_datasource_impl.dart'
@@ -79,6 +83,10 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i993.Talker>(),
         gh<_i938.AppDatabase>(),
       ),
+    );
+    gh.factory<_i253.MealDatasource>(
+      () =>
+          _i617.MealDatasourceImpl(gh<_i993.Talker>(), gh<_i938.AppDatabase>()),
     );
     gh.lazySingleton<_i169.AppNotificationCubit>(
       () => _i169.AppNotificationCubit(gh<_i349.NotificationManager>()),
