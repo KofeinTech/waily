@@ -207,7 +207,7 @@ class FeatureRepositoryImpl implements FeatureRepository {
 ```
 
 ### Data Layer: Datasource Implementation
-Location: `lib/features/[feature]/data/sources/[feature]_api_datasource_impl.dart`.
+Location: `lib/features/[feature]/data/datasources/[feature]_api_datasource_impl.dart`.
 *   **Inheritance:** Must inherit from `AppGateway`.
 *   **Dependencies:** Injects `AppGateway`.
 *   **Annotations:** Uses `@Injectable(as: FeatureApiDatasource)`.
