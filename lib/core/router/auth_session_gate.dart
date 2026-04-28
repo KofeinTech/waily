@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../features/core/domain/sources/secure_storage.dart';
+import '../../features/core/data/datasources/secure_storage.dart';
 
 /// Tracks whether the current user has an active session.
 ///
@@ -15,12 +15,6 @@ abstract class AuthSessionGate extends ChangeNotifier {
   /// Re-reads the underlying source of truth. Idempotent.
   Future<void> refresh();
 }
-
-/// Storage key under which the session token lives.
-///
-/// Top-level constant so the future real auth implementation can write
-/// to the same slot.
-const String authTokenStorageKey = 'auth_token';
 
 /// Default implementation until the auth feature ships.
 ///

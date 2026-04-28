@@ -48,7 +48,7 @@ void main() {
       final tables = rows.map((r) => r.read<String>('name')).toSet();
       expect(
         tables,
-        containsAll(<String>['users', 'workouts', 'meals', 'hydrations']),
+        containsAll(<String>['profiles', 'workouts', 'meals', 'hydrations']),
       );
     });
   });

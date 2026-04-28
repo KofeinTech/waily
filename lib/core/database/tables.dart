@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 
-@DataClassName('UsersData')
-class Users extends Table {
+@DataClassName('ProfilesData')
+class Profiles extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get displayName => text().withLength(min: 1, max: 100).nullable()();
   DateTimeColumn get dateOfBirth => dateTime().nullable()();

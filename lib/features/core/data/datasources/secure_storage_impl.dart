@@ -1,7 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../domain/sources/secure_storage.dart';
+import 'secure_storage.dart';
 
 @LazySingleton(as: SecureStorage)
 class SecureStorageImpl implements SecureStorage {
