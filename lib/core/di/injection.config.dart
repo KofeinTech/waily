@@ -101,7 +101,7 @@ extension GetItInjectableX on _i174.GetIt {
       dispose: _i513.closeDatabase,
     );
     gh.lazySingleton<_i550.LocalStorage>(() => _i1013.LocalStorageImpl());
-    gh.factory<_i399.LoggingInterceptor>(
+    gh.lazySingleton<_i399.LoggingInterceptor>(
       () => _i399.LoggingInterceptor(gh<_i993.Talker>()),
     );
     gh.lazySingleton<_i82.SecureStorage>(() => _i442.SecureStorageImpl());

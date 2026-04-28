@@ -4,7 +4,7 @@ import 'package:talker/talker.dart';
 
 import '../../env/env.dart';
 
-@injectable
+@lazySingleton
 class LoggingInterceptor extends Interceptor {
   LoggingInterceptor(this._talker);
 
