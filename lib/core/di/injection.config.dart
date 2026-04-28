@@ -26,6 +26,7 @@ import 'package:waily/core/network/auth/token_store_impl.dart' as _i124;
 import 'package:waily/core/network/interceptors/auth_interceptor.dart' as _i208;
 import 'package:waily/core/network/interceptors/logging_interceptor.dart'
     as _i399;
+import 'package:waily/core/network/network_module.dart' as _i2;
 import 'package:waily/core/router/auth_session_gate.dart' as _i670;
 import 'package:waily/features/core/data/datasources/local_storage.dart'
     as _i550;
@@ -85,15 +86,13 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final appModule = _$AppModule();
     final databaseModule = _$DatabaseModule();
+    final networkModule = _$NetworkModule();
     gh.singleton<_i993.Talker>(() => appModule.talker);
     gh.lazySingleton<_i938.AppDatabase>(
       () => databaseModule.appDatabase(),
       dispose: _i513.closeDatabase,
     );
     gh.lazySingleton<_i550.LocalStorage>(() => _i1013.LocalStorageImpl());
-    gh.lazySingleton<_i176.ApiClient>(
-      () => _i933.ApiClientImpl(gh<_i361.Dio>()),
-    );
     gh.factory<_i399.LoggingInterceptor>(
       () => _i399.LoggingInterceptor(gh<_i993.Talker>()),
     );
@@ -160,6 +159,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i670.AuthSessionGate>(),
       ),
     );
+    gh.lazySingleton<_i361.Dio>(
+      () => networkModule.dio(
+        gh<_i208.AuthInterceptor>(),
+        gh<_i399.LoggingInterceptor>(),
+      ),
+    );
+    gh.lazySingleton<_i176.ApiClient>(
+      () => _i933.ApiClientImpl(gh<_i361.Dio>()),
+    );
     return this;
   }
 }
@@ -167,3 +175,5 @@ extension GetItInjectableX on _i174.GetIt {
 class _$AppModule extends _i267.AppModule {}
 
 class _$DatabaseModule extends _i513.DatabaseModule {}
+
+class _$NetworkModule extends _i2.NetworkModule {}
