@@ -16,12 +16,6 @@ abstract class AuthSessionGate extends ChangeNotifier {
   Future<void> refresh();
 }
 
-/// Storage key under which the session token lives.
-///
-/// Top-level constant so the future real auth implementation can write
-/// to the same slot.
-const String authTokenStorageKey = 'auth_token';
-
 /// Default implementation until the auth feature ships.
 ///
 /// Defaults to authenticated so the dev build can reach the shell

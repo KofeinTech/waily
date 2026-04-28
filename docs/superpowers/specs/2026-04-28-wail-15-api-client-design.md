@@ -619,7 +619,7 @@ Conventions inherited from WAIL-13/14: mockito + `@GenerateMocks`, no `bloc_test
 - `Authorization: Bearer secret` → log message contains `'***'`, never the actual token
 - Setup uses `dotenv.testLoad` + `resetEnvForTesting()`
 
-**`app_gateway_test.dart`** — table-driven: each `DioException` shape from the mapping table → expected `ApiException` subtype + statusCode. Plus: non-Dio `Exception` → `UnknownApiException`; rethrow of pre-existing `ApiException` without re-wrapping; `Talker.handle` called for each error. Uses a private `_TestGateway` subclass exposing `safeCall` publicly.
+**`app_gateway_test.dart`** — table-driven: each `DioException` shape from the mapping table → expected `ApiException` subtype + statusCode. Plus: non-Dio `Exception` is rethrown unchanged (verified via `throwsA(same(original))` for object identity); pre-existing `ApiException` is rethrown without re-wrapping; `voidSafeCall` delegates correctly. Uses a private `_TestGateway` subclass exposing `safeCall` publicly with a real `Talker()` instance (the load-bearing assertion is the thrown exception type, not the Talker invocation).
 
 **`ping_api_datasource_impl_test.dart`** — happy path (mock `ApiClient.get('/ping')` returns `Response(data: ...)` → `PingResponse` is fromJson'd correctly) plus integration: `MockApiClient.get` throws `DioException(connectionError)` → `getPing()` throws `NetworkException` (proves `safeCall` mapping is wired at the datasource level).
 
