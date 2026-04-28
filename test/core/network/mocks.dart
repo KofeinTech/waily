@@ -13,5 +13,8 @@ import 'package:waily/core/router/auth_session_gate.dart';
   AuthTokenRefresher,
   AuthSessionGate,
   Talker,
+  RequestInterceptorHandler,
+  ResponseInterceptorHandler,
+  ErrorInterceptorHandler,
 ])
 void main() {}

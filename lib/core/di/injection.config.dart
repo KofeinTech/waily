@@ -23,6 +23,8 @@ import 'package:waily/core/network/auth/stub_auth_token_refresher.dart'
     as _i332;
 import 'package:waily/core/network/auth/token_store.dart' as _i689;
 import 'package:waily/core/network/auth/token_store_impl.dart' as _i124;
+import 'package:waily/core/network/interceptors/logging_interceptor.dart'
+    as _i399;
 import 'package:waily/core/router/auth_session_gate.dart' as _i670;
 import 'package:waily/features/core/data/datasources/local_storage.dart'
     as _i550;
@@ -90,6 +92,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i550.LocalStorage>(() => _i1013.LocalStorageImpl());
     gh.lazySingleton<_i176.ApiClient>(
       () => _i933.ApiClientImpl(gh<_i361.Dio>()),
+    );
+    gh.factory<_i399.LoggingInterceptor>(
+      () => _i399.LoggingInterceptor(gh<_i993.Talker>()),
     );
     gh.lazySingleton<_i82.SecureStorage>(() => _i442.SecureStorageImpl());
     gh.lazySingleton<_i159.AuthTokenRefresher>(
