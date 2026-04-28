@@ -15,6 +15,9 @@ import 'package:talker/talker.dart' as _i993;
 import 'package:waily/core/database/app_database.dart' as _i938;
 import 'package:waily/core/database/database_module.dart' as _i513;
 import 'package:waily/core/di/app_module.dart' as _i267;
+import 'package:waily/core/network/auth/auth_token_refresher.dart' as _i159;
+import 'package:waily/core/network/auth/stub_auth_token_refresher.dart'
+    as _i332;
 import 'package:waily/core/network/auth/token_store.dart' as _i689;
 import 'package:waily/core/network/auth/token_store_impl.dart' as _i124;
 import 'package:waily/core/router/auth_session_gate.dart' as _i670;
@@ -83,6 +86,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i550.LocalStorage>(() => _i1013.LocalStorageImpl());
     gh.lazySingleton<_i82.SecureStorage>(() => _i442.SecureStorageImpl());
+    gh.lazySingleton<_i159.AuthTokenRefresher>(
+      () => _i332.StubAuthTokenRefresher(),
+    );
     gh.lazySingleton<_i689.TokenStore>(
       () => _i124.TokenStoreImpl(gh<_i82.SecureStorage>()),
     );
