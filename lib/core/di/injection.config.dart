@@ -44,6 +44,10 @@ import 'package:waily/features/core/domain/use_cases/trigger_demo_error_use_case
     as _i374;
 import 'package:waily/features/core/presentation/bloc/app_notification_cubit.dart'
     as _i169;
+import 'package:waily/features/example/data/datasources/ping_api_datasource.dart'
+    as _i791;
+import 'package:waily/features/example/data/datasources/ping_api_datasource_impl.dart'
+    as _i373;
 import 'package:waily/features/hydration/data/datasources/hydration_datasource.dart'
     as _i975;
 import 'package:waily/features/hydration/data/datasources/hydration_datasource_impl.dart'
@@ -167,6 +171,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i176.ApiClient>(
       () => _i933.ApiClientImpl(gh<_i361.Dio>()),
+    );
+    gh.factory<_i791.PingApiDatasource>(
+      () => _i373.PingApiDatasourceImpl(
+        gh<_i993.Talker>(),
+        gh<_i176.ApiClient>(),
+      ),
     );
     return this;
   }
