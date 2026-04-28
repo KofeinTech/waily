@@ -57,10 +57,10 @@ lib/features/example/                             # NEW — demo only, removable
   domain/
     entities/ping_status.dart                     # Freezed
     repositories/ping_repository.dart             # abstract
-    sources/ping_api_datasource.dart              # abstract
   data/
     models/ping_response.dart                     # Freezed + fromJson
     mappers/ping_response_mapper.dart             # extension toEntity()
+    datasources/ping_api_datasource.dart          # abstract
     datasources/ping_api_datasource_impl.dart     # extends AppGateway
     repositories/ping_repository_impl.dart        # @LazySingleton(as: PingRepository)
   README.md                                       # "demo only — remove when real features land"
@@ -384,7 +384,7 @@ abstract class PingRepository {
   Future<PingStatus> ping();
 }
 
-// domain/sources/ping_api_datasource.dart
+// data/datasources/ping_api_datasource.dart
 abstract class PingApiDatasource {
   Future<PingResponse> getPing();
 }
@@ -625,9 +625,9 @@ test/features/example/mocks.dart               # @GenerateMocks([ApiClient, Ping
 - `lib/core/network/auth/token_store_impl.dart`
 - `lib/features/example/domain/entities/ping_status.dart`
 - `lib/features/example/domain/repositories/ping_repository.dart`
-- `lib/features/example/domain/sources/ping_api_datasource.dart`
 - `lib/features/example/data/models/ping_response.dart`
 - `lib/features/example/data/mappers/ping_response_mapper.dart`
+- `lib/features/example/data/datasources/ping_api_datasource.dart`
 - `lib/features/example/data/datasources/ping_api_datasource_impl.dart`
 - `lib/features/example/data/repositories/ping_repository_impl.dart`
 - `lib/features/example/README.md`
