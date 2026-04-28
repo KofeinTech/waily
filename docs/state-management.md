@@ -31,7 +31,7 @@ Use `isSilent: true` on a use case when the notification should be suppressed fo
 
 ## Persistence
 
-Two thin storage interfaces live in `lib/features/core/domain/sources/`. Both are registered in DI as lazy singletons.
+Two thin storage interfaces live in `lib/features/core/data/datasources/`. Both are registered in DI as lazy singletons.
 
 | Data | Storage |
 | --- | --- |

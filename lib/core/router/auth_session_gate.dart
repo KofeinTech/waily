@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../features/core/domain/sources/secure_storage.dart';
+import '../../features/core/data/datasources/secure_storage.dart';
 
 /// Tracks whether the current user has an active session.
 ///

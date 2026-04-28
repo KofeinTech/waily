@@ -16,17 +16,18 @@ import 'package:waily/core/database/app_database.dart' as _i938;
 import 'package:waily/core/database/database_module.dart' as _i513;
 import 'package:waily/core/di/app_module.dart' as _i267;
 import 'package:waily/core/router/auth_session_gate.dart' as _i670;
+import 'package:waily/features/core/data/datasources/local_storage.dart'
+    as _i550;
 import 'package:waily/features/core/data/datasources/local_storage_impl.dart'
     as _i1013;
+import 'package:waily/features/core/data/datasources/secure_storage.dart'
+    as _i82;
 import 'package:waily/features/core/data/datasources/secure_storage_impl.dart'
     as _i442;
 import 'package:waily/features/core/data/managers/notification_manager_impl.dart'
     as _i95;
 import 'package:waily/features/core/domain/managers/notification_manager.dart'
     as _i349;
-import 'package:waily/features/core/domain/sources/local_storage.dart' as _i891;
-import 'package:waily/features/core/domain/sources/secure_storage.dart'
-    as _i501;
 import 'package:waily/features/core/domain/use_cases/trigger_demo_error_use_case.dart'
     as _i374;
 import 'package:waily/features/core/presentation/bloc/app_notification_cubit.dart'
@@ -78,12 +79,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => databaseModule.appDatabase(),
       dispose: _i513.closeDatabase,
     );
-    gh.lazySingleton<_i891.LocalStorage>(() => _i1013.LocalStorageImpl());
+    gh.lazySingleton<_i550.LocalStorage>(() => _i1013.LocalStorageImpl());
+    gh.lazySingleton<_i82.SecureStorage>(() => _i442.SecureStorageImpl());
     gh.singleton<_i349.NotificationManager>(
       () => _i95.NotificationManagerImpl(),
       dispose: (i) => i.dispose(),
     );
-    gh.lazySingleton<_i501.SecureStorage>(() => _i442.SecureStorageImpl());
     gh.factory<_i558.UserDatasource>(
       () =>
           _i487.UserDatasourceImpl(gh<_i993.Talker>(), gh<_i938.AppDatabase>()),
@@ -108,7 +109,7 @@ extension GetItInjectableX on _i174.GetIt {
           _i617.MealDatasourceImpl(gh<_i993.Talker>(), gh<_i938.AppDatabase>()),
     );
     gh.lazySingleton<_i670.AuthSessionGate>(
-      () => _i670.StubAuthSessionGate(gh<_i501.SecureStorage>()),
+      () => _i670.StubAuthSessionGate(gh<_i82.SecureStorage>()),
     );
     gh.lazySingleton<_i756.MealRepository>(
       () => _i241.MealRepositoryImpl(gh<_i253.MealDatasource>()),

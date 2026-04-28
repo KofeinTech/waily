@@ -76,27 +76,27 @@ void main() {
 
     test('LocalStorage interface file exists on disk', () {
       final file = File(
-        'lib/features/core/domain/sources/local_storage.dart',
+        'lib/features/core/data/datasources/local_storage.dart',
       );
       expect(
         file.existsSync(),
         isTrue,
         reason:
             'A LocalStorage abstraction must exist at '
-            'lib/features/core/domain/sources/local_storage.dart',
+            'lib/features/core/data/datasources/local_storage.dart',
       );
     });
 
     test('SecureStorage interface file exists on disk', () {
       final file = File(
-        'lib/features/core/domain/sources/secure_storage.dart',
+        'lib/features/core/data/datasources/secure_storage.dart',
       );
       expect(
         file.existsSync(),
         isTrue,
         reason:
             'A SecureStorage abstraction must exist at '
-            'lib/features/core/domain/sources/secure_storage.dart',
+            'lib/features/core/data/datasources/secure_storage.dart',
       );
     });
   });
