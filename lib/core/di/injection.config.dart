@@ -30,6 +30,10 @@ import 'package:waily/features/core/domain/use_cases/trigger_demo_error_use_case
     as _i374;
 import 'package:waily/features/core/presentation/bloc/app_notification_cubit.dart'
     as _i169;
+import 'package:waily/features/user/data/datasources/user_datasource.dart'
+    as _i558;
+import 'package:waily/features/user/data/datasources/user_datasource_impl.dart'
+    as _i487;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -51,6 +55,10 @@ extension GetItInjectableX on _i174.GetIt {
       dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i891.LocalStorage>(() => _i284.LocalStorageImpl());
+    gh.factory<_i558.UserDatasource>(
+      () =>
+          _i487.UserDatasourceImpl(gh<_i993.Talker>(), gh<_i938.AppDatabase>()),
+    );
     gh.lazySingleton<_i169.AppNotificationCubit>(
       () => _i169.AppNotificationCubit(gh<_i349.NotificationManager>()),
       dispose: (i) => i.close(),
