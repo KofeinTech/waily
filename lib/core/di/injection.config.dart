@@ -34,6 +34,10 @@ import 'package:waily/features/hydration/data/datasources/hydration_datasource.d
     as _i975;
 import 'package:waily/features/hydration/data/datasources/hydration_datasource_impl.dart'
     as _i933;
+import 'package:waily/features/hydration/data/repositories/hydration_repository_impl.dart'
+    as _i722;
+import 'package:waily/features/hydration/domain/repositories/hydration_repository.dart'
+    as _i374;
 import 'package:waily/features/meal/data/datasources/meal_datasource.dart'
     as _i253;
 import 'package:waily/features/meal/data/datasources/meal_datasource_impl.dart'
@@ -117,6 +121,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i993.Talker>(),
         gh<_i349.NotificationManager>(),
       ),
+    );
+    gh.lazySingleton<_i374.HydrationRepository>(
+      () => _i722.HydrationRepositoryImpl(gh<_i975.HydrationDatasource>()),
     );
     return this;
   }
