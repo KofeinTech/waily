@@ -15,6 +15,8 @@ import 'package:talker/talker.dart' as _i993;
 import 'package:waily/core/database/app_database.dart' as _i938;
 import 'package:waily/core/database/database_module.dart' as _i513;
 import 'package:waily/core/di/app_module.dart' as _i267;
+import 'package:waily/core/network/auth/token_store.dart' as _i689;
+import 'package:waily/core/network/auth/token_store_impl.dart' as _i124;
 import 'package:waily/core/router/auth_session_gate.dart' as _i670;
 import 'package:waily/features/core/data/datasources/local_storage.dart'
     as _i550;
@@ -81,6 +83,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i550.LocalStorage>(() => _i1013.LocalStorageImpl());
     gh.lazySingleton<_i82.SecureStorage>(() => _i442.SecureStorageImpl());
+    gh.lazySingleton<_i689.TokenStore>(
+      () => _i124.TokenStoreImpl(gh<_i82.SecureStorage>()),
+    );
     gh.singleton<_i349.NotificationManager>(
       () => _i95.NotificationManagerImpl(),
       dispose: (i) => i.dispose(),
