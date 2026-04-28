@@ -20,7 +20,7 @@ abstract class AppGateway {
       throw _mapDioException(e);
     } catch (e, st) {
       _talker.handle(e, st, 'AppGateway error');
-      throw UnknownApiException(e.toString());
+      rethrow;
     }
   }
 
@@ -38,6 +38,8 @@ abstract class AppGateway {
       DioExceptionType.badResponse => _mapStatus(e),
       DioExceptionType.cancel =>
         const UnknownApiException('Request cancelled'),
+      DioExceptionType.badCertificate =>
+        const UnknownApiException('Invalid or untrusted certificate'),
       _ => const UnknownApiException(),
     };
   }

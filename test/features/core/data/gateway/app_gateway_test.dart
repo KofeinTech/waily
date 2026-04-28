@@ -124,10 +124,19 @@ void main() {
     });
   });
 
-  test('non-Dio Exception becomes UnknownApiException', () async {
+  test('non-Dio Exception is rethrown unchanged', () async {
+    const original = FormatException('bad json');
     await expectLater(
-      gateway.run(() async => throw const FormatException('bad json')),
-      throwsA(isA<UnknownApiException>()),
+      gateway.run(() async => throw original),
+      throwsA(same(original)),
+    );
+  });
+
+  test('badCertificate -> UnknownApiException("Invalid or untrusted certificate")', () async {
+    await expectLater(
+      gateway.run(() async => throw _dio(DioExceptionType.badCertificate)),
+      throwsA(isA<UnknownApiException>()
+          .having((e) => e.message, 'message', 'Invalid or untrusted certificate')),
     );
   });
 
