@@ -346,14 +346,14 @@ abstract class AppGateway {
   Future<T> safeCall<T>(Future<T> Function() operation) async {
     try {
       return await operation();
+    } on ApiException {
+      rethrow;
     } on DioException catch (e, st) {
       _talker.handle(e, st, 'AppGateway DioException');
       throw _mapDioException(e);
-    } on ApiException {
-      rethrow;
     } catch (e, st) {
       _talker.handle(e, st, 'AppGateway error');
-      throw UnknownApiException(e.toString());
+      rethrow;
     }
   }
 
@@ -369,6 +369,8 @@ abstract class AppGateway {
       DioExceptionType.receiveTimeout => const TimeoutApiException(),
       DioExceptionType.badResponse => _mapStatus(e),
       DioExceptionType.cancel => const UnknownApiException('Request cancelled'),
+      DioExceptionType.badCertificate =>
+        const UnknownApiException('Invalid or untrusted certificate'),
       _ => const UnknownApiException(),
     };
   }
@@ -570,15 +572,18 @@ Dio -> SocketException -> DioException(connectionError)
 | `badResponse` 400-499 (other) | `BadRequestException(code)` |
 | `badResponse` 500-599 | `ServerException(code)` |
 | `cancel` | `UnknownApiException('Request cancelled')` |
+| `badCertificate` | `UnknownApiException('Invalid or untrusted certificate')` |
 | Other / unknown | `UnknownApiException` |
-| Non-Dio `Exception` inside `safeCall` | `UnknownApiException(e.toString())` |
+| Non-Dio `Exception` / `Error` inside `safeCall` | **rethrow as-is** (logged via Talker, not wrapped) — see "Why" below |
 
 Response message extraction reads `response.data['message']` if present; otherwise falls back to the default per type.
+
+**Why the generic `catch` rethrows instead of wrapping:** `AppGateway` is shared between HTTP datasources (this ticket) and the local-DB datasources from WAIL-13 (`HydrationDatasourceImpl`, `MealDatasourceImpl`, `UserDatasourceImpl`, `WorkoutDatasourceImpl`, all `extends AppGateway`). Wrapping every non-Dio exception into `UnknownApiException` would change WAIL-13 behavior — Drift / SQLite / `StateError` errors would lose their native type. Rethrowing keeps both layers honest: HTTP layer gets typed `ApiException` from `_mapDioException`, DB layer keeps native exceptions, and `AsyncUseCase` already catches the `Exception` base type and converts to `Left`.
 
 ### What network layer does NOT handle
 
 - **Business errors in 200 OK responses** (e.g. `{"success": false, "error": "..."}`) — datasource decides and throws.
-- **JSON parsing errors** — caught by `safeCall` as generic `Exception` → `UnknownApiException`. Adding `ParsingException` is out of scope.
+- **JSON parsing errors** — escape `safeCall` as their native type (`FormatException`, `TypeError`, etc.). `AsyncUseCase` catches them as `Exception` and converts to `Left`. Adding a typed `ParsingException` is out of scope.
 - **Notifications** — network layer never calls `NotificationManager`. UseCases wrap `ApiException` in `NotificationException` if a UX surface is required.
 
 ## Testing strategy
