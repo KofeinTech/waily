@@ -9,9 +9,11 @@ environment:
 dependencies:
   dartz: ^0.10.1
   dio: ^5.9.2
+  equatable: ^2.0.7
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
+  flutter_dotenv: ^5.2.1
   flutter_svg: ^2.2.4
   freezed_annotation: ^3.1.0
   get_it: ^9.2.1
@@ -51,6 +53,7 @@ dependency_overrides:
 flutter:
   uses-material-design: true
   assets:
+    - .env
     - assets/icons/
     - assets/icons/common/
     - assets/icons/chat/

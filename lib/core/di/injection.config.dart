@@ -15,6 +15,7 @@ import 'package:talker/talker.dart' as _i993;
 import 'package:waily/core/database/app_database.dart' as _i938;
 import 'package:waily/core/database/database_module.dart' as _i513;
 import 'package:waily/core/di/app_module.dart' as _i267;
+import 'package:waily/core/router/auth_session_gate.dart' as _i670;
 import 'package:waily/features/core/data/datasources/local_storage_impl.dart'
     as _i1013;
 import 'package:waily/features/core/data/datasources/secure_storage_impl.dart'
@@ -105,6 +106,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i253.MealDatasource>(
       () =>
           _i617.MealDatasourceImpl(gh<_i993.Talker>(), gh<_i938.AppDatabase>()),
+    );
+    gh.lazySingleton<_i670.AuthSessionGate>(
+      () => _i670.StubAuthSessionGate(gh<_i501.SecureStorage>()),
     );
     gh.lazySingleton<_i756.MealRepository>(
       () => _i241.MealRepositoryImpl(gh<_i253.MealDatasource>()),
