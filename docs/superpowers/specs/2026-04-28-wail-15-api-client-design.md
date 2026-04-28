@@ -30,6 +30,31 @@ The following decisions narrow the scope vs. the original Jira technical notes:
 3. **`connectivity_plus` package is NOT added.** Connectivity is detected reactively via `DioExceptionType.connectionError` → `NetworkException`. Proactive offline detection (banner, queueing) can be added when there's a real UX requirement.
 4. **Refresh-flow ships as infrastructure (interceptor + mutex + post-refresh request retry) but with a stub `AuthTokenRefresher` returning `null`.** "Post-refresh request retry" here means re-issuing the original failing request once after a successful token refresh — not the general retry-on-transient-error policy deferred in #2. The auth feature ticket replaces the `@LazySingleton(as: AuthTokenRefresher)` binding with a real implementation; nothing else changes.
 5. **`TokenStore` is introduced as a facade over `SecureStorage` for the auth-token slot.** `AuthInterceptor` and the future real `AuthSessionGate` both depend on `TokenStore`, not on `SecureStorage` directly. Other secrets keep using `SecureStorage`.
+6. **Bundled refactor: storage datasource abstractions move from `domain/sources/` to `data/datasources/`.** The existing `lib/features/core/domain/sources/local_storage.dart` and `secure_storage.dart` violate the project convention that *all* datasource code (abstract + impl) lives under `data/datasources/`. They were created before the `data/sources/ -> data/datasources/` rename in WAIL-13. Since WAIL-15 introduces a new datasource abstraction (`PingApiDatasource`) and a new layer over `SecureStorage` (`TokenStore`), aligning the existing abstractions in the same change keeps the convention consistent. See "Bundled refactor" below.
+
+## Bundled refactor: storage abstractions move to `data/datasources/`
+
+Move (no logic change):
+- `lib/features/core/domain/sources/local_storage.dart` → `lib/features/core/data/datasources/local_storage.dart`
+- `lib/features/core/domain/sources/secure_storage.dart` → `lib/features/core/data/datasources/secure_storage.dart`
+- Delete the now-empty `lib/features/core/domain/sources/` directory.
+
+Update imports in 5 files:
+- `lib/features/core/data/datasources/local_storage_impl.dart`
+- `lib/features/core/data/datasources/secure_storage_impl.dart`
+- `lib/core/router/auth_session_gate.dart`
+- `test/features/core/mocks.dart`
+- `test/independent_ac_tests/ac4_persistence_strategy_documented_test.dart` (file-existence assertions, 2 path strings each for LocalStorage/SecureStorage)
+
+Auto-regenerate via `build_runner build --delete-conflicting-outputs`:
+- `lib/core/di/injection.config.dart`
+- `test/features/core/mocks.mocks.dart`
+
+Documentation updates:
+- `docs/state-management.md` line 34: `lib/features/core/domain/sources/` → `lib/features/core/data/datasources/`
+- `CLAUDE.md` "Layer responsibilities" → `data/`: change `sources/` to `datasources/` so prose matches the directory tree shown above it (existing inconsistency, fixed in passing).
+
+The refactor does NOT touch `LocalStorage` / `SecureStorage` interfaces themselves, their implementations, or any of their consumers' usage.
 
 ## Architecture
 
@@ -643,11 +668,26 @@ test/features/example/mocks.dart               # @GenerateMocks([ApiClient, Ping
 
 **Modified:**
 - `lib/features/core/data/gateway/app_gateway.dart` — adds `_mapDioException` + `_mapStatus`, throws `ApiException` from `safeCall`
+- `lib/features/core/data/datasources/local_storage_impl.dart` — import path updated for the moved abstract
+- `lib/features/core/data/datasources/secure_storage_impl.dart` — import path updated for the moved abstract
+- `lib/core/router/auth_session_gate.dart` — import path for `SecureStorage` updated; `authTokenStorageKey` constant stays
+- `test/features/core/mocks.dart` — import path updated
+- `test/independent_ac_tests/ac4_persistence_strategy_documented_test.dart` — 4 path strings updated to point at `data/datasources/`
+- `docs/state-management.md` — one path reference updated
+- `CLAUDE.md` — "Layer responsibilities" prose: `data/sources/` → `data/datasources/` (existing inconsistency cleaned up in passing)
 - `pubspec.yaml` — no new packages; `dio`, `retrofit`, `json_serializable` already present (Retrofit not used in WAIL-15)
+
+**Moved (no content change):**
+- `lib/features/core/domain/sources/local_storage.dart` → `lib/features/core/data/datasources/local_storage.dart`
+- `lib/features/core/domain/sources/secure_storage.dart` → `lib/features/core/data/datasources/secure_storage.dart`
+- `lib/features/core/domain/sources/` directory removed (now empty)
+
+**Auto-regenerated (build_runner):**
+- `lib/core/di/injection.config.dart`
+- `test/features/core/mocks.mocks.dart`
 
 **Untouched but worth noting:**
 - `lib/main.dart` — boot sequence stays as-is
-- `lib/core/router/auth_session_gate.dart` — `authTokenStorageKey` constant still lives there; the future real `AuthSessionGate` impl will be refactored to use `TokenStore`
 
 ## Risks
 
@@ -656,6 +696,7 @@ test/features/example/mocks.dart               # @GenerateMocks([ApiClient, Ping
 3. **Future real `AuthTokenRefresherImpl` causing 401 recursion.** Mitigated by the `extra['skip_auth_retry']` mechanism documented above. Spec for the auth feature ticket must reference this contract.
 4. **`@JsonKey(name: 'server_time')` requires `json_serializable` codegen.** Already in `dev_dependencies`; `build_runner build --delete-conflicting-outputs` will be required after implementation.
 5. **Talker noise in dev with `ENABLE_LOGGING=true`.** Acceptable for now — Talker has its own filter UI. If verbose, follow-up can add a per-route allowlist.
+6. **Bundled refactor regenerates `injection.config.dart` and `mocks.mocks.dart`.** `build_runner build --delete-conflicting-outputs` is required after the move; otherwise the generated files reference deleted import paths and the build fails. The implementation plan must run codegen as a discrete step right after the move and before any compile-dependent assertions.
 
 ## Out of scope
 
