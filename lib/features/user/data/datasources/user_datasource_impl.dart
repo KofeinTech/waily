@@ -53,8 +53,11 @@ class UserDatasourceImpl extends AppGateway implements UserDatasource {
       );
 
   @override
-  Future<List<UsersData>> getAll() =>
-      safeCall(() => (_db.select(_db.users)).get());
+  Future<List<UsersData>> getAll() => safeCall(
+        () => (_db.select(_db.users)
+              ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+            .get(),
+      );
 
   @override
   Future<void> deleteById(int id) => voidSafeCall(() async {
