@@ -1753,6 +1753,23 @@ void main() {
       expect(result, equals(updated));
     });
 
+    test('update throws StateError if datasource returns null afterwards',
+        () async {
+      when(ds.updateById(any,
+        name: anyNamed('name'),
+        calories: anyNamed('calories'),
+        eatenAt: anyNamed('eatenAt'),
+      )).thenAnswer((_) async => Future.value());
+      when(ds.getById(any)).thenAnswer((_) async => null);
+
+      await expectLater(
+        () => repo.update(MealEntry(
+          id: 1, name: 'X', eatenAt: DateTime(2026, 4, 27),
+        )),
+        throwsA(isA<StateError>()),
+      );
+    });
+
     test('getById maps row to entity', () async {
       final eaten = DateTime(2026, 4, 27, 8, 0);
       when(ds.getById(1)).thenAnswer((_) async => MealsData(
@@ -2288,6 +2305,22 @@ void main() {
       final result = await repo.update(updated);
 
       expect(result, equals(updated));
+    });
+
+    test('update throws StateError if datasource returns null afterwards',
+        () async {
+      when(ds.updateById(any,
+        amountMl: anyNamed('amountMl'),
+        createdAt: anyNamed('createdAt'),
+      )).thenAnswer((_) async => Future.value());
+      when(ds.getById(any)).thenAnswer((_) async => null);
+
+      await expectLater(
+        () => repo.update(HydrationEntry(
+          id: 1, amountMl: 250, createdAt: DateTime(2026, 4, 27),
+        )),
+        throwsA(isA<StateError>()),
+      );
     });
 
     test('getById maps row to entity', () async {
