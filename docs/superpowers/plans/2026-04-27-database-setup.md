@@ -516,8 +516,11 @@ class UserDatasourceImpl extends AppGateway implements UserDatasource {
       );
 
   @override
-  Future<List<UsersData>> getAll() =>
-      safeCall(() => (_db.select(_db.users)).get());
+  Future<List<UsersData>> getAll() => safeCall(
+        () => (_db.select(_db.users)
+              ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+            .get(),
+      );
 
   @override
   Future<void> deleteById(int id) => voidSafeCall(() async {
@@ -1078,8 +1081,11 @@ class WorkoutDatasourceImpl extends AppGateway implements WorkoutDatasource {
       );
 
   @override
-  Future<List<WorkoutsData>> getAll() =>
-      safeCall(() => (_db.select(_db.workouts)).get());
+  Future<List<WorkoutsData>> getAll() => safeCall(
+        () => (_db.select(_db.workouts)
+              ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+            .get(),
+      );
 
   @override
   Future<void> deleteById(int id) => voidSafeCall(() async {
@@ -1603,8 +1609,11 @@ class MealDatasourceImpl extends AppGateway implements MealDatasource {
       );
 
   @override
-  Future<List<MealsData>> getAll() =>
-      safeCall(() => (_db.select(_db.meals)).get());
+  Future<List<MealsData>> getAll() => safeCall(
+        () => (_db.select(_db.meals)
+              ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+            .get(),
+      );
 
   @override
   Future<void> deleteById(int id) => voidSafeCall(() async {
