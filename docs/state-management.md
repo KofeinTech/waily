@@ -89,3 +89,15 @@ The complete reference flow ships in `lib/features/core/`:
 - `presentation/screens/demo_home_screen.dart` — buttons that exercise both paths
 
 Copy the patterns from these files when building new features. If you find yourself diverging, update this doc first.
+
+## Local database (Drift)
+
+Structured local data lives in an [`AppDatabase`](../lib/core/database/app_database.dart) defined under `lib/core/database/`.
+
+- Schema lives in `lib/core/database/tables.dart` — one Drift `Table` per entity. `@DataClassName` overrides keep Drift row classes (e.g. `HydrationsData`) distinct from domain entities (e.g. `HydrationEntry`).
+- Each entity has a per-feature data layer: `lib/features/<entity>/data/{datasources,repositories,mappers}/`. Datasources extend `AppGateway` and wrap Drift queries in `safeCall`/`voidSafeCall`. Repositories consume datasources, apply mappers, return Freezed entities.
+- DI: `AppDatabase` is registered as a `@LazySingleton` in `lib/core/database/database_module.dart` with a `closeDatabase` dispose hook so `getIt.reset()` cleanly closes the SQLite handle (important for tests).
+- Tests: datasource tests run against `AppDatabase(NativeDatabase.memory())` — no platform channels, fast, isolated. Repository tests stub the datasource via mockito.
+- Codegen: `drift_dev` plugs into the existing `build_runner` pipeline. `app_database.g.dart` is generated alongside the source and gitignored (`*.g.dart` rule).
+
+Migration strategy is intentionally not in place yet — the schema is at `version 1` and a real change to a table will own the first migration.
