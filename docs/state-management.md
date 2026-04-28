@@ -16,7 +16,7 @@ UI widget ─► Cubit ─► UseCase ─► Repository ─► Datasource (exten
 - **Cubit** (`lib/features/<name>/presentation/bloc/`) — owns UI state. Calls use cases. Never touches repositories directly.
 - **UseCase** (`lib/features/<name>/domain/use_cases/`) — encapsulates business logic. Extends `AsyncUseCase` or `SyncUseCase`. Returns `Either<Exception, R>`.
 - **Repository** — interface in `domain/repositories/`, implementation in `data/repositories/`.
-- **Datasource** (`lib/features/<name>/data/sources/`) — extends `AppGateway`; wraps Dio / storage / DB calls in `safeCall<T>` or `voidSafeCall`.
+- **Datasource** (`lib/features/<name>/data/datasources/`) — extends `AppGateway`; wraps Dio / storage / DB calls in `safeCall<T>` or `voidSafeCall`.
 
 ## Notification flow
 

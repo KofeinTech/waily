@@ -15,12 +15,12 @@ import 'package:talker/talker.dart' as _i993;
 import 'package:waily/core/database/app_database.dart' as _i938;
 import 'package:waily/core/database/database_module.dart' as _i513;
 import 'package:waily/core/di/app_module.dart' as _i267;
+import 'package:waily/features/core/data/datasources/local_storage_impl.dart'
+    as _i1013;
+import 'package:waily/features/core/data/datasources/secure_storage_impl.dart'
+    as _i442;
 import 'package:waily/features/core/data/managers/notification_manager_impl.dart'
     as _i95;
-import 'package:waily/features/core/data/sources/local_storage_impl.dart'
-    as _i284;
-import 'package:waily/features/core/data/sources/secure_storage_impl.dart'
-    as _i1044;
 import 'package:waily/features/core/domain/managers/notification_manager.dart'
     as _i349;
 import 'package:waily/features/core/domain/sources/local_storage.dart' as _i891;
@@ -77,12 +77,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => databaseModule.appDatabase(),
       dispose: _i513.closeDatabase,
     );
-    gh.lazySingleton<_i501.SecureStorage>(() => _i1044.SecureStorageImpl());
+    gh.lazySingleton<_i891.LocalStorage>(() => _i1013.LocalStorageImpl());
     gh.singleton<_i349.NotificationManager>(
       () => _i95.NotificationManagerImpl(),
       dispose: (i) => i.dispose(),
     );
-    gh.lazySingleton<_i891.LocalStorage>(() => _i284.LocalStorageImpl());
+    gh.lazySingleton<_i501.SecureStorage>(() => _i442.SecureStorageImpl());
     gh.factory<_i558.UserDatasource>(
       () =>
           _i487.UserDatasourceImpl(gh<_i993.Talker>(), gh<_i938.AppDatabase>()),
