@@ -48,6 +48,10 @@ import 'package:waily/features/example/data/datasources/ping_api_datasource.dart
     as _i791;
 import 'package:waily/features/example/data/datasources/ping_api_datasource_impl.dart'
     as _i373;
+import 'package:waily/features/example/data/repositories/ping_repository_impl.dart'
+    as _i922;
+import 'package:waily/features/example/domain/repositories/ping_repository.dart'
+    as _i601;
 import 'package:waily/features/hydration/data/datasources/hydration_datasource.dart'
     as _i975;
 import 'package:waily/features/hydration/data/datasources/hydration_datasource_impl.dart'
@@ -177,6 +181,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i993.Talker>(),
         gh<_i176.ApiClient>(),
       ),
+    );
+    gh.lazySingleton<_i601.PingRepository>(
+      () => _i922.PingRepositoryImpl(gh<_i791.PingApiDatasource>()),
     );
     return this;
   }
