@@ -56,6 +56,23 @@ void main() {
       expect(result, equals(updated));
     });
 
+    test('update throws StateError if datasource returns null afterwards',
+        () async {
+      when(ds.updateById(any,
+        kind: anyNamed('kind'),
+        startedAt: anyNamed('startedAt'),
+        finishedAt: anyNamed('finishedAt'),
+      )).thenAnswer((_) async => Future.value());
+      when(ds.getById(any)).thenAnswer((_) async => null);
+
+      await expectLater(
+        () => repo.update(WorkoutEntry(
+          id: 1, kind: 'cardio', startedAt: DateTime(2026, 4, 27),
+        )),
+        throwsA(isA<StateError>()),
+      );
+    });
+
     test('getById maps row to entity', () async {
       final start = DateTime(2026, 4, 27, 7, 0);
       when(ds.getById(1)).thenAnswer((_) async => WorkoutsData(
