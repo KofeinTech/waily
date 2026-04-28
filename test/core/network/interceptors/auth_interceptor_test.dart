@@ -85,6 +85,7 @@ void main() {
       await _pumpEventQueue();
 
       expect(options.headers.containsKey('Authorization'), isFalse);
+      verify(handler.next(options)).called(1);
     });
   });
 

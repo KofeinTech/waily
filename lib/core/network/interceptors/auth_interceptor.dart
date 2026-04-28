@@ -8,7 +8,7 @@ import '../../router/auth_session_gate.dart';
 import '../auth/auth_token_refresher.dart';
 import '../auth/token_store.dart';
 
-@injectable
+@lazySingleton
 class AuthInterceptor extends Interceptor {
   AuthInterceptor(this._tokenStore, this._refresher, this._sessionGate);
 

@@ -153,7 +153,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i374.HydrationRepository>(
       () => _i722.HydrationRepositoryImpl(gh<_i975.HydrationDatasource>()),
     );
-    gh.factory<_i208.AuthInterceptor>(
+    gh.lazySingleton<_i208.AuthInterceptor>(
       () => _i208.AuthInterceptor(
         gh<_i689.TokenStore>(),
         gh<_i159.AuthTokenRefresher>(),
