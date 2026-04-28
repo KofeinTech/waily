@@ -5,7 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/open.dart';
 import 'package:waily/core/database/app_database.dart';
-import 'package:waily/features/user/data/datasources/user_datasource_impl.dart';
+import 'package:waily/features/profile/data/datasources/profile_datasource_impl.dart';
 
 import '../../../core/mocks.mocks.dart';
 
@@ -24,15 +24,15 @@ void main() {
     }
   });
 
-  group('UserDatasourceImpl', () {
+  group('ProfileDatasourceImpl', () {
     late AppDatabase db;
     late MockTalker talker;
-    late UserDatasourceImpl ds;
+    late ProfileDatasourceImpl ds;
 
     setUp(() {
       talker = MockTalker();
       db = AppDatabase(NativeDatabase.memory());
-      ds = UserDatasourceImpl(talker, db);
+      ds = ProfileDatasourceImpl(talker, db);
     });
 
     tearDown(() async {

@@ -68,14 +68,14 @@ import 'package:waily/features/meal/data/repositories/meal_repository_impl.dart'
     as _i241;
 import 'package:waily/features/meal/domain/repositories/meal_repository.dart'
     as _i756;
-import 'package:waily/features/user/data/datasources/user_datasource.dart'
-    as _i558;
-import 'package:waily/features/user/data/datasources/user_datasource_impl.dart'
-    as _i487;
-import 'package:waily/features/user/data/repositories/user_repository_impl.dart'
-    as _i164;
-import 'package:waily/features/user/domain/repositories/user_repository.dart'
-    as _i803;
+import 'package:waily/features/profile/data/datasources/profile_datasource.dart'
+    as _i606;
+import 'package:waily/features/profile/data/datasources/profile_datasource_impl.dart'
+    as _i234;
+import 'package:waily/features/profile/data/repositories/profile_repository_impl.dart'
+    as _i304;
+import 'package:waily/features/profile/domain/repositories/profile_repository.dart'
+    as _i1051;
 import 'package:waily/features/workout/data/datasources/workout_datasource.dart'
     as _i244;
 import 'package:waily/features/workout/data/datasources/workout_datasource_impl.dart'
@@ -115,18 +115,17 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i95.NotificationManagerImpl(),
       dispose: (i) => i.dispose(),
     );
-    gh.factory<_i558.UserDatasource>(
-      () =>
-          _i487.UserDatasourceImpl(gh<_i993.Talker>(), gh<_i938.AppDatabase>()),
-    );
     gh.factory<_i975.HydrationDatasource>(
       () => _i933.HydrationDatasourceImpl(
         gh<_i993.Talker>(),
         gh<_i938.AppDatabase>(),
       ),
     );
-    gh.lazySingleton<_i803.UserRepository>(
-      () => _i164.UserRepositoryImpl(gh<_i558.UserDatasource>()),
+    gh.factory<_i606.ProfileDatasource>(
+      () => _i234.ProfileDatasourceImpl(
+        gh<_i993.Talker>(),
+        gh<_i938.AppDatabase>(),
+      ),
     );
     gh.factory<_i244.WorkoutDatasource>(
       () => _i714.WorkoutDatasourceImpl(
@@ -159,6 +158,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i374.HydrationRepository>(
       () => _i722.HydrationRepositoryImpl(gh<_i975.HydrationDatasource>()),
+    );
+    gh.lazySingleton<_i1051.ProfileRepository>(
+      () => _i304.ProfileRepositoryImpl(gh<_i606.ProfileDatasource>()),
     );
     gh.lazySingleton<_i208.AuthInterceptor>(
       () => _i208.AuthInterceptor(

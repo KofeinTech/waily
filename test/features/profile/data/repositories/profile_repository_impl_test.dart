@@ -1,19 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:waily/core/database/app_database.dart';
-import 'package:waily/features/user/data/repositories/user_repository_impl.dart';
-import 'package:waily/features/user/domain/entities/user.dart';
+import 'package:waily/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:waily/features/profile/domain/entities/profile.dart';
 
 import '../../mocks.mocks.dart';
 
 void main() {
-  group('UserRepositoryImpl', () {
-    late MockUserDatasource ds;
-    late UserRepositoryImpl repo;
+  group('ProfileRepositoryImpl', () {
+    late MockProfileDatasource ds;
+    late ProfileRepositoryImpl repo;
 
     setUp(() {
-      ds = MockUserDatasource();
-      repo = UserRepositoryImpl(ds);
+      ds = MockProfileDatasource();
+      repo = ProfileRepositoryImpl(ds);
     });
 
     test('add delegates to insert and returns entity with assigned id', () async {
@@ -24,12 +24,12 @@ void main() {
         weightKg: anyNamed('weightKg'),
       )).thenAnswer((_) async => 42);
 
-      final user = await repo.add(displayName: 'Ana', dateOfBirth: null,
+      final profile = await repo.add(displayName: 'Ana', dateOfBirth: null,
                                   heightCm: 170.0, weightKg: null);
 
-      expect(user.id, 42);
-      expect(user.displayName, 'Ana');
-      expect(user.heightCm, 170.0);
+      expect(profile.id, 42);
+      expect(profile.displayName, 'Ana');
+      expect(profile.heightCm, 170.0);
       verify(ds.insert(
         displayName: 'Ana',
         dateOfBirth: null,
@@ -40,7 +40,7 @@ void main() {
 
     test('update delegates write then re-reads via getById', () async {
       const targetId = 7;
-      const updated = User(
+      const updated = Profile(
         id: targetId, displayName: 'B', dateOfBirth: null,
         heightCm: 180.0, weightKg: null,
       );
@@ -50,7 +50,7 @@ void main() {
         heightCm: anyNamed('heightCm'),
         weightKg: anyNamed('weightKg'),
       )).thenAnswer((_) async => Future.value());
-      when(ds.getById(targetId)).thenAnswer((_) async => UsersData(
+      when(ds.getById(targetId)).thenAnswer((_) async => ProfilesData(
             id: targetId, displayName: 'B', dateOfBirth: null,
             heightCm: 180.0, weightKg: null,
           ));
@@ -74,13 +74,13 @@ void main() {
       when(ds.getById(any)).thenAnswer((_) async => null);
 
       await expectLater(
-        () => repo.update(const User(id: 1)),
+        () => repo.update(const Profile(id: 1)),
         throwsA(isA<StateError>()),
       );
     });
 
     test('getById maps row to entity; null row → null entity', () async {
-      when(ds.getById(1)).thenAnswer((_) async => UsersData(
+      when(ds.getById(1)).thenAnswer((_) async => ProfilesData(
             id: 1, displayName: 'X', dateOfBirth: null,
             heightCm: null, weightKg: null,
           ));
@@ -92,9 +92,9 @@ void main() {
 
     test('getAll maps rows in order', () async {
       when(ds.getAll()).thenAnswer((_) async => [
-            UsersData(id: 1, displayName: 'A', dateOfBirth: null,
+            ProfilesData(id: 1, displayName: 'A', dateOfBirth: null,
                       heightCm: null, weightKg: null),
-            UsersData(id: 2, displayName: 'B', dateOfBirth: null,
+            ProfilesData(id: 2, displayName: 'B', dateOfBirth: null,
                       heightCm: null, weightKg: null),
           ]);
 

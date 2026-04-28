@@ -1,6 +1,6 @@
 import '../../../../core/database/app_database.dart';
 
-abstract class UserDatasource {
+abstract class ProfileDatasource {
   Future<int> insert({
     required String? displayName,
     required DateTime? dateOfBirth,
@@ -16,7 +16,7 @@ abstract class UserDatasource {
     required double? weightKg,
   });
 
-  Future<UsersData?> getById(int id);
-  Future<List<UsersData>> getAll();
+  Future<ProfilesData?> getById(int id);
+  Future<List<ProfilesData>> getAll();
   Future<void> deleteById(int id);
 }

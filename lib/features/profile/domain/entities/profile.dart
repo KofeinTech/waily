@@ -1,14 +1,14 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'user.freezed.dart';
+part 'profile.freezed.dart';
 
 @freezed
-abstract class User with _$User {
-  const factory User({
+abstract class Profile with _$Profile {
+  const factory Profile({
     required int id,
     String? displayName,
     DateTime? dateOfBirth,
     double? heightCm,
     double? weightKg,
-  }) = _User;
+  }) = _Profile;
 }

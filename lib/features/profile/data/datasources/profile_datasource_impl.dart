@@ -3,11 +3,11 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../core/data/gateway/app_gateway.dart';
-import 'user_datasource.dart';
+import 'profile_datasource.dart';
 
-@Injectable(as: UserDatasource)
-class UserDatasourceImpl extends AppGateway implements UserDatasource {
-  UserDatasourceImpl(super.talker, this._db);
+@Injectable(as: ProfileDatasource)
+class ProfileDatasourceImpl extends AppGateway implements ProfileDatasource {
+  ProfileDatasourceImpl(super.talker, this._db);
 
   final AppDatabase _db;
 
@@ -18,8 +18,8 @@ class UserDatasourceImpl extends AppGateway implements UserDatasource {
     required double? heightCm,
     required double? weightKg,
   }) =>
-      safeCall(() => _db.into(_db.users).insert(
-            UsersCompanion.insert(
+      safeCall(() => _db.into(_db.profiles).insert(
+            ProfilesCompanion.insert(
               displayName: Value(displayName),
               dateOfBirth: Value(dateOfBirth),
               heightCm: Value(heightCm),
@@ -36,8 +36,8 @@ class UserDatasourceImpl extends AppGateway implements UserDatasource {
     required double? weightKg,
   }) =>
       voidSafeCall(() async {
-        await (_db.update(_db.users)..where((t) => t.id.equals(id))).write(
-          UsersCompanion(
+        await (_db.update(_db.profiles)..where((t) => t.id.equals(id))).write(
+          ProfilesCompanion(
             displayName: Value(displayName),
             dateOfBirth: Value(dateOfBirth),
             heightCm: Value(heightCm),
@@ -47,20 +47,20 @@ class UserDatasourceImpl extends AppGateway implements UserDatasource {
       });
 
   @override
-  Future<UsersData?> getById(int id) => safeCall(
-        () => (_db.select(_db.users)..where((t) => t.id.equals(id)))
+  Future<ProfilesData?> getById(int id) => safeCall(
+        () => (_db.select(_db.profiles)..where((t) => t.id.equals(id)))
             .getSingleOrNull(),
       );
 
   @override
-  Future<List<UsersData>> getAll() => safeCall(
-        () => (_db.select(_db.users)
+  Future<List<ProfilesData>> getAll() => safeCall(
+        () => (_db.select(_db.profiles)
               ..orderBy([(t) => OrderingTerm.asc(t.id)]))
             .get(),
       );
 
   @override
   Future<void> deleteById(int id) => voidSafeCall(() async {
-        await (_db.delete(_db.users)..where((t) => t.id.equals(id))).go();
+        await (_db.delete(_db.profiles)..where((t) => t.id.equals(id))).go();
       });
 }

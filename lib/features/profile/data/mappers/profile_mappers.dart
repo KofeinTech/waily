@@ -1,8 +1,8 @@
 import '../../../../core/database/app_database.dart';
-import '../../domain/entities/user.dart';
+import '../../domain/entities/profile.dart';
 
-extension UserRowMapper on UsersData {
-  User toEntity() => User(
+extension ProfileRowMapper on ProfilesData {
+  Profile toEntity() => Profile(
         id: id,
         displayName: displayName,
         dateOfBirth: dateOfBirth,
